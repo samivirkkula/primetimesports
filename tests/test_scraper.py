@@ -117,6 +117,25 @@ class NflTests(unittest.TestCase):
         self.assertEqual([g["language"] for g in self.games], ["fi", "fi", "en", "fi"])
         self.assertEqual(self.games[0]["url"], "https://www.ruutu.fi/stream/4002")
 
+    def test_ruutu_react_markup_self_closing_tags_and_comments(self):
+        from datetime import date
+        games = ruutu.parse((FIX / "ruutu_nfl_react.html").read_text(), today=date(2026, 10, 30))
+        self.assertEqual([(g["title"], g["start"], g["language"]) for g in games], [
+            ("Kansas City Chiefs – Buffalo Bills", "2026-11-01T18:00:00Z", "fi"),
+            ("New England Patriots & Co – New York Jets", "2026-11-01T21:25:00Z", "fi")])
+
+    def test_ruutu_only_redzone_is_not_an_error(self):
+        from datetime import date
+        html = (FIX / "ruutu_nfl_react.html").read_text()
+        only_rz = html.split("<li>")[0] + "<li>" + html.split("<li>")[2]
+        self.assertEqual(ruutu.parse(only_rz, today=date(2026, 10, 30)), [])
+
+    def test_ruutu_unreadable_cards_raise(self):
+        from datetime import date
+        html = (FIX / "ruutu_nfl_react.html").read_text().replace("1.11.", "")
+        with self.assertRaises(ValueError):
+            ruutu.parse(html, today=date(2026, 10, 30))
+
     def test_ruutu_structure_change_raises(self):
         from datetime import date
         with self.assertRaises(ValueError):

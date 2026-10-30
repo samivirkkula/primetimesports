@@ -3,12 +3,15 @@
 The page lists each live stream as a link to /stream/<id> with a title, a time element
 ("<strong>20:00</strong>1.11.") and an image whose alt text tells the commentary
 language ("Selostus suomi"). RedZone and recordings are skipped.
+
+Each card is cut out of the HTML as the text between <a href="/stream/..."> and its </a>,
+so the parser does not depend on how the page nests or self-closes its tags.
 """
 from __future__ import annotations
 
+import html as htmllib
 import re
 from datetime import date, datetime, timedelta, timezone
-from html.parser import HTMLParser
 from zoneinfo import ZoneInfo
 
 from .http import request
@@ -17,63 +20,19 @@ URL = "https://www.ruutu.fi/ohjelmat/nfl"
 TZ = ZoneInfo("Europe/Helsinki")
 GAME = re.compile(r".+\s(?:-|–|—|vs\.?|@)\s.+", re.I)
 
+_CARD = re.compile(r'<a\b[^>]*\bhref="(/stream/[^"]+)"[^>]*>(.*?)</a>', re.S | re.I)
+_TITLE = re.compile(r'<[a-z0-9]+\b[^>]*class="[^"]*titleText[^"]*"[^>]*>(.*?)</[a-z0-9]+>', re.S | re.I)
+_TIME = re.compile(r'<[a-z0-9]+\b[^>]*class="[^"]*__time[^"]*"[^>]*>(.*?)</(?:span|div|p|time)>', re.S | re.I)
+_CLOCK = re.compile(r"(\d{1,2})[:.](\d{2})(?!\d)")
+_DAY = re.compile(r"(?<![\d:.])(\d{1,2})\.(\d{1,2})\.")
+_ALT = re.compile(r'\balt="([^"]*)"', re.I)
+_TAG = re.compile(r"<[^>]+>")
+_COMMENT = re.compile(r"<!--.*?-->", re.S)
 
-class _Cards(HTMLParser):
-    def __init__(self):
-        super().__init__(convert_charrefs=True)
-        self.h1 = ""
-        self.cards: list[dict] = []
-        self._card: dict | None = None
-        self._depth = 0          # nesting depth inside the current <a>
-        self._mode: list[tuple[int, str]] = []  # (depth, kind) for title/time/strong/h1
-        self._in_h1 = False
 
-    def handle_starttag(self, tag, attrs):
-        a = dict(attrs)
-        cls = a.get("class") or ""
-        if tag == "h1":
-            self._in_h1 = True
-        if self._card is None:
-            if tag == "a" and (a.get("href") or "").startswith("/stream/"):
-                self._card = {"href": a["href"], "title": "", "clock": "", "time": "", "alts": []}
-                self._depth = 1
-            return
-        if tag not in ("img", "br", "source", "meta", "input"):
-            self._depth += 1
-        if tag == "img" and a.get("alt"):
-            self._card["alts"].append(a["alt"])
-        if "titleText" in cls:
-            self._mode.append((self._depth, "title"))
-        elif "__time" in cls:
-            self._mode.append((self._depth, "time"))
-        elif tag == "strong" and any(k == "time" for _, k in self._mode):
-            self._mode.append((self._depth, "clock"))
-
-    def handle_endtag(self, tag):
-        if tag == "h1":
-            self._in_h1 = False
-        if self._card is None:
-            return
-        while self._mode and self._mode[-1][0] >= self._depth:
-            self._mode.pop()
-        self._depth -= 1
-        if self._depth == 0:
-            self.cards.append(self._card)
-            self._card = None
-            self._mode.clear()
-
-    def handle_data(self, data):
-        if self._in_h1:
-            self.h1 += data
-        if self._card is None or not self._mode:
-            return
-        kinds = {k for _, k in self._mode}
-        if "clock" in kinds:
-            self._card["clock"] += data
-        elif "time" in kinds:
-            self._card["time"] += data
-        elif "title" in kinds:
-            self._card["title"] += data
+def _text(fragment: str) -> str:
+    # React SSR splits text nodes with <!-- --> comments ("20<!-- -->:<!-- -->00").
+    return " ".join(htmllib.unescape(_TAG.sub(" ", _COMMENT.sub("", fragment))).split())
 
 
 def _event_date(day: int, month: int, today: date) -> date | None:
@@ -87,16 +46,34 @@ def _event_date(day: int, month: int, today: date) -> date | None:
     return None
 
 
+def parse_cards(html: str) -> list[dict]:
+    """Raw cards: href, title, clock text, date text, image alts."""
+    cards = []
+    for href, body in _CARD.findall(html):
+        title_m = _TITLE.search(body)
+        time_m = _TIME.search(body)
+        time_html = time_m.group(1) if time_m else body
+        strong = re.search(r"<strong\b[^>]*>(.*?)</strong>", time_html, re.S | re.I)
+        cards.append({
+            "href": href,
+            "title": _text(title_m.group(1)) if title_m else "",
+            "clock": _text(strong.group(1)) if strong else _text(time_html),
+            "time": _text(time_html),
+            "alts": [htmllib.unescape(a) for a in _ALT.findall(body)],
+        })
+    return cards
+
+
 def parse(html: str, *, today: date) -> list[dict]:
-    p = _Cards()
-    p.feed(html)
-    if "NFL" not in p.h1:
-        raise ValueError("Ruudun NFL-sivun rakenne muuttui (otsikko puuttuu)")
+    head = _text(" ".join(re.findall(r"<(?:h1|title)\b[^>]*>(.*?)</(?:h1|title)>", html, re.S | re.I)))
+    if "NFL" not in head:
+        raise ValueError("Ruudun NFL-sivun rakenne muuttui (NFL-otsikko puuttuu)")
+    cards = parse_cards(html)
     events = []
-    for c in p.cards:
-        title = " ".join(c["title"].split())
-        clock = re.fullmatch(r"\s*(\d{1,2})[:.](\d{2})\s*", c["clock"])
-        day = re.search(r"(\d{1,2})\.(\d{1,2})\.", c["time"])
+    for c in cards:
+        title = c["title"]
+        clock = _CLOCK.search(c["clock"])
+        day = _DAY.search(c["time"].replace(c["clock"], " ")) or _DAY.search(c["time"])
         if not title or not clock or not day:
             continue
         if "redzone" in title.lower() or not GAME.match(title):
@@ -108,7 +85,7 @@ def parse(html: str, *, today: date) -> list[dict]:
         start = local.astimezone(timezone.utc)
         fi = any(re.search(r"selostus\s+suomi", alt, re.I) for alt in c["alts"])
         events.append({
-            "sport": "nfl", "series": "NFL", "title": title.replace(" - ", " – "), "session": "",
+            "sport": "nfl", "series": "NFL", "title": re.sub(r"\s+-\s+", " – ", title), "session": "",
             "start": start.isoformat().replace("+00:00", "Z"),
             "end": (start + timedelta(hours=3, minutes=30)).isoformat().replace("+00:00", "Z"),
             "service": "Ruutu+", "channel": None, "free": False,
@@ -116,6 +93,13 @@ def parse(html: str, *, today: date) -> list[dict]:
             "url": "https://www.ruutu.fi" + c["href"],
             "source_id": c["href"],
         })
+    # Cards were found but none could be read: the markup changed. Fail loudly so the
+    # cached result is used and the app footer reports the problem. A page with only
+    # RedZone (or nothing) on it is not an error.
+    titled = [c for c in cards if c["title"]]
+    games = [c for c in titled if "redzone" not in c["title"].lower() and GAME.match(c["title"])]
+    if (cards and not titled) or (games and not events):
+        raise ValueError(f"Ruudun NFL-sivulta löytyi {len(cards)} korttia, mutta otteluita ei voitu lukea")
     return events
 
 
