@@ -107,7 +107,11 @@ function renderList() {
     const row = tpl.content.firstElementChild.cloneNode(true);
     row.style.setProperty("--c", `var(--c-${ev.sport})`);
     const primary = bcs.find((b) => b.free) || bcs[0];
-    row.href = primary.url || "#";
+    const go = row.querySelector(".go");
+    go.href = primary.url || "#";
+    const remind = row.querySelector(".remind");
+    remind.href = `ics/${ev.id}.ics`;
+    remind.setAttribute("aria-label", `Muistuta: lisää kalenteriin ${ev.title}, hälytys 15 min ennen`);
     if (start <= now) row.classList.add("now");
     const t = row.querySelector(".t");
     t.textContent = time(ev.start);
@@ -122,7 +126,7 @@ function renderList() {
       span.textContent = b.service;
       where.append(span);
     }
-    row.setAttribute("aria-label",
+    go.setAttribute("aria-label",
       `${time(ev.start)} ${ev.series || ""} ${ev.title} ${ev.session || ""}, ${bcs.map((b) => b.service).join(", ")}`);
     list.append(row);
     shown++;

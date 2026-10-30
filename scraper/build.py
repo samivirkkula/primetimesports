@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import elisa, liiga, mtv, ruutu, viaplay
+from . import elisa, ics, liiga, mtv, ruutu, viaplay
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
@@ -225,11 +225,19 @@ def main(argv=None) -> int:
     windows = {k: v.get("start_window") for k, v in cfg["sports"].items() if v.get("start_window")}
     events = finalize(events, now, last, windows, tz)
 
-    nhl_lang = {}
+    # Diagnostics for tuning: how NHL commentary language was decided, with examples.
+    nhl_lang: dict[str, int] = {}
+    samples: dict[str, list[str]] = {}
     for e in viaplay_items:
         if e["sport"] == "nhl":
-            nhl_lang[str(e.get("language"))] = nhl_lang.get(str(e.get("language")), 0) + 1
+            key = f'{e.get("language")}/{e.get("language_rule", "?")}'
+            nhl_lang[key] = nhl_lang.get(key, 0) + 1
+            text = e.get("language_sample") or "(ei kuvausta)"
+            if len(samples.setdefault(key, [])) < 3 and text not in samples[key]:
+                samples[key].append(f'{e["title"][:40]} | {text}')
     status["nhl_viaplay_languages"] = nhl_lang
+    if viaplay.DISCOVERED:
+        status["viaplay_discovered_paths"] = dict(viaplay.DISCOVERED)
 
     OUT.mkdir(exist_ok=True)
     payload = {
@@ -240,12 +248,22 @@ def main(argv=None) -> int:
         "status": status,
     }
     (OUT / "schedule.json").write_text(json.dumps(payload, ensure_ascii=False, indent=1))
+    n_ics = ics.write_all(events, payload["sports"], OUT / "ics", now=now)
     CACHE.mkdir(exist_ok=True)
     (CACHE / "match-report.json").write_text(json.dumps(report, ensure_ascii=False, indent=1))
 
-    print(f"{len(events)} tapahtumaa -> {OUT / 'schedule.json'}")
+    print(f"{len(events)} tapahtumaa -> {OUT / 'schedule.json'}, {n_ics} kalenteritiedostoa -> {OUT / 'ics'}")
     for name, st in status.items():
         print(f"  {name}: {st}")
+    if samples:
+        print("NHL-selostuskielen esimerkit (kieli/sääntö | ottelu | kuvaus):")
+        for key, rows in samples.items():
+            for r in rows:
+                print(f"  {key} | {r}")
+    shown = {}
+    for e in events:
+        shown[e["sport"]] = shown.get(e["sport"], 0) + 1
+    print(f"Sovelluksessa lajeittain: {shown}")
     fetched_any = any(isinstance(s, dict) and s.get("state") in ("ok", "cached") and s.get("count") for s in status.values())
     if not events and not fetched_any:
         print("Yksikään lähde ei tuottanut dataa – julkaisu ohitetaan.", file=sys.stderr)

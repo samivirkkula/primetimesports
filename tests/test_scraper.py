@@ -7,7 +7,7 @@ from unittest import mock
 
 from zoneinfo import ZoneInfo
 
-from scraper import build, elisa, liiga, mtv, ruutu, viaplay
+from scraper import build, elisa, ics, liiga, mtv, ruutu, viaplay
 
 HEL = ZoneInfo("Europe/Helsinki")
 
@@ -39,6 +39,13 @@ class ViaplayTests(unittest.TestCase):
         en = {"content": {"description": {"synopsis": "Englanninkielinen selostus."}}}
         arr = {"content": {"audioLanguages": [{"code": "fin"}]}}
         none = {"content": {"description": {"synopsis": "Runkosarjaottelu."}}}
+        en_colon = {"content": {"description": {"synopsis": "Runkosarjaa. Selostus: englanti."}}}
+        fi_colon = {"content": {"description": {"synopsis": "Selostus: suomi"}}}
+        ui_langs = {"content": {"languages": ["fi", "sv"], "description": {"synopsis": "Runkosarjaottelu."}}}
+        self.assertEqual(viaplay.explain_language(en_colon), ("en", "text:english"))
+        self.assertEqual(viaplay.explain_language(fi_colon), ("fi", "text:finnish"))
+        self.assertEqual(viaplay.explain_language(fi), ("fi", "text:commentator"))
+        self.assertIsNone(viaplay.detect_language(ui_langs), "UI-kielet eivät kerro selostuskieltä")
         self.assertEqual(viaplay.detect_language(fi), "fi")
         self.assertEqual(viaplay.detect_language(en), "en")
         self.assertEqual(viaplay.detect_language(arr), "fi")
@@ -180,6 +187,30 @@ class WindowTests(unittest.TestCase):
             ("f1", "2026-11-01T19:00:00Z"), ("f1", "2026-11-02T01:00:00Z"), ("nhl", "2026-11-01T19:00:00Z")])
 
 
+class IcsTests(unittest.TestCase):
+    EV = {"id": "abc123", "sport": "nhl", "series": "NHL", "title": "Detroit Red Wings – Winnipeg Jets",
+          "session": "", "start": "2026-11-01T19:00:00Z", "end": "2026-11-01T22:00:00Z",
+          "broadcasts": [{"service": "Viaplay", "free": False, "url": "https://viaplay.fi/x"},
+                         {"service": "MTV Sub", "free": True, "url": "https://www.mtv.fi/kanavat/aikataulu"}]}
+
+    def test_event_with_alarm(self):
+        text = ics.event_ics(self.EV, "NHL", now=datetime(2026, 10, 30, 18, tzinfo=timezone.utc))
+        self.assertTrue(text.startswith("BEGIN:VCALENDAR\r\n"))
+        self.assertTrue(text.endswith("END:VCALENDAR\r\n"))
+        unfolded = text.replace("\r\n ", "")
+        for line in ("UID:abc123@primetimesports", "DTSTART:20261101T190000Z", "DTEND:20261101T220000Z",
+                     "SUMMARY:NHL: Detroit Red Wings – Winnipeg Jets", "LOCATION:Viaplay\\, MTV Sub",
+                     "URL:https://www.mtv.fi/kanavat/aikataulu", "TRIGGER:-PT15M", "BEGIN:VALARM"):
+            self.assertIn(line, unfolded)
+
+    def test_lines_are_folded_to_75_octets(self):
+        ev = dict(self.EV, title="Ääkkösiä " * 20)
+        text = ics.event_ics(ev, "NHL", now=datetime(2026, 10, 30, tzinfo=timezone.utc))
+        for line in text.split("\r\n"):
+            self.assertLessEqual(len(line.encode("utf-8")), 75, line)
+        self.assertIn("Ääkkösiä " * 20, text.replace("\r\n ", "").replace("\\", ""))
+
+
 class BuildTests(unittest.TestCase):
     def test_full_build_with_mocked_sources(self):
         def fake_get(url, **kw):
@@ -212,6 +243,8 @@ class BuildTests(unittest.TestCase):
             rc = build.main(["--now", "2026-10-30T18:00:00Z"])
         self.assertEqual(rc, 0)
         data = json.loads((FIX.parent / ".tmp-site" / "schedule.json").read_text())
+        for e in data["events"]:
+            self.assertTrue((FIX.parent / ".tmp-site" / "ics" / f'{e["id"]}.ics').exists(), e["title"])
         sports = {e["sport"] for e in data["events"]}
         self.assertEqual(sports, {"f1", "nhl", "liiga", "nfl"})
         # No build-time window by default: night games stay in the data; the app filters primetime.

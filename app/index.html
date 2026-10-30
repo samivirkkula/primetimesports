@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/vt323.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="app.css?v=5">
+<link rel="stylesheet" href="app.css?v=6">
 </head>
 <body>
 <header class="top">
@@ -35,18 +35,21 @@
 <footer class="foot" id="foot"></footer>
 
 <template id="row">
-  <a class="ev" target="_blank" rel="noopener">
+  <div class="ev">
     <time class="t"></time>
     <span class="bar" aria-hidden="true"></span>
     <span class="what">
       <span class="series"></span>
-      <span class="title"></span>
+      <a class="title go" target="_blank" rel="noopener"></a>
       <span class="session"></span>
     </span>
     <span class="where"></span>
-  </a>
+    <a class="remind" target="_blank" rel="noopener" title="Muistuta">
+      <svg viewBox="0 0 24 24" width="21" height="21" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    </a>
+  </div>
 </template>
 
-<script src="app.js?v=5" defer></script>
+<script src="app.js?v=6" defer></script>
 </body>
 </html>
