@@ -1,6 +1,6 @@
 // Network first, cached copy when offline. Bump VERSION when app files change.
-const VERSION = "urheilu-tv-4";
-const SHELL = ["./", "index.html", "app.css", "app.js", "manifest.webmanifest", "icons/icon-192.png", "fonts/vt323.woff", "fonts/archivo.woff"];
+const VERSION = "urheilu-tv-5";
+const SHELL = ["./", "index.html", "app.css?v=5", "app.js?v=5", "manifest.webmanifest", "icons/icon-192.png", "fonts/vt323.woff", "fonts/archivo.woff"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -23,6 +23,6 @@ self.addEventListener("fetch", (e) => {
         }
         return res;
       })
-      .catch(() => caches.match(e.request, { ignoreSearch: true }))
+      .catch(() => caches.match(e.request))
   );
 });

@@ -160,30 +160,53 @@ function render() {
   renderFoot();
 }
 
+function showError(text) {
+  const upd = $("updated");
+  if (upd) upd.textContent = "";
+  const list = $("list");
+  if (!list) return;
+  list.textContent = "";
+  const p = document.createElement("p");
+  p.className = "error";
+  p.textContent = text;
+  list.append(p);
+}
+
 async function load() {
+  let fresh;
   try {
     const res = await fetch("schedule.json", { cache: "no-cache" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    data = await res.json();
-    fetchedAt = Date.now();
+    fresh = await res.json();
+  } catch (err) {
+    if (!data) showError("Aikataulua ei voitu ladata. Tarkista verkkoyhteys ja avaa sovellus uudelleen.");
+    return;
+  }
+  data = fresh;
+  fetchedAt = Date.now();
+  try {
     render();
   } catch (err) {
-    if (data) return; // keep showing what we have
-    $("updated").textContent = "";
-    const list = $("list");
-    list.textContent = "";
-    const p = document.createElement("p");
-    p.className = "error";
-    p.textContent = "Aikataulua ei voitu ladata. Tarkista verkkoyhteys ja avaa sovellus uudelleen.";
-    list.append(p);
+    showError(`Aikataulun näyttäminen epäonnistui: ${err && err.message ? err.message : err}`);
   }
 }
 
+// Bind a checkbox if it exists. An older cached index.html may lack a newer toggle;
+// the app must still start.
+function bindToggle(id, key) {
+  const el = $(id);
+  if (!el) return;
+  el.checked = Boolean(state[key]);
+  el.addEventListener("change", (e) => { state[key] = e.target.checked; saveState(); if (data) renderList(); });
+}
+
+window.addEventListener("error", (e) => {
+  if (!data) showError(`Sovellus kaatui: ${e.message}. Sulje sovellus kokonaan ja avaa uudelleen.`);
+});
+
 loadState();
-$("primeOnly").checked = state.primeOnly;
-$("primeOnly").addEventListener("change", (e) => { state.primeOnly = e.target.checked; saveState(); renderList(); });
-$("freeOnly").checked = state.freeOnly;
-$("freeOnly").addEventListener("change", (e) => { state.freeOnly = e.target.checked; saveState(); renderList(); });
+bindToggle("primeOnly", "primeOnly");
+bindToggle("freeOnly", "freeOnly");
 
 load();
 setInterval(() => data && renderList(), 60_000);
