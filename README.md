@@ -46,9 +46,11 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 3. Actions → *Päivitä aikataulu ja julkaise* → Run workflow.
 4. On the iPhone: open `https://<user>.github.io/<repo>/` in Safari → Share → Add to Home Screen.
 
-## Start-time window
+## Primetime
 
-`config.json` → `sports.<sport>.start_window` keeps only events that start inside the window in Finnish local time (inclusive), e.g. `["16:00", "23:00"]` for NHL and NFL. A 23.25 NFL game or a 02.00 NHL game is dropped. Remove the key to show all games.
+The app has a "Näytä vain primetime (klo 15–23 alkavat)" checkbox (on by default, remembered on the phone). When on, only broadcasts starting 15.00–23.00 Finnish time are shown, for all sports; when off, everything is shown.
+
+`config.json` also supports a build-time `sports.<sport>.start_window`, e.g. `["16:00", "23:00"]`, which drops events outside the window from the data entirely. No sport uses it by default.
 
 ## How merging works
 
@@ -63,8 +65,8 @@ The last successful result of each source is cached in `.cache/` (kept between w
 
 ## Known gaps
 
-- **NHL commentary language.** Viaplay's schedule list does not have an explicit language field. `scraper/viaplay.py: detect_language` looks for language arrays and Finnish/English commentary markers in the description. The build prints `nhl_viaplay_languages` (counts of `fi` / `en` / `None`); check it after the first real run and tune the patterns. Unknown-language games are hidden while the app's "NHL vain suomeksi selostettuna" toggle is on.
-- **Disney+** has no public schedule; add confirmed Finnish-commentary games to `data/overrides.json` (remove `"_example": true`).
+- **Commentary language** is not used for filtering; the app shows every broadcast. Viaplay's language guess (`scraper/viaplay.py: explain_language`) is kept only for matching and diagnostics.
+- **Disney+** has no public schedule; add confirmed games to `data/overrides.json` (remove `"_example": true`).
 - **Viaplay API field names** are taken from public clients of the same API and are verified only against fixtures; the first live run is the real test.
 - **Ruutu's NFL page** is parsed from HTML (link, title, time and commentary-language image). A site redesign breaks it; the cached result is used for 48 h and the app footer shows the failure.
 - A free-to-air NFL broadcast whose guide title does not name the teams joins the single Finnish-commentary Ruutu game starting within 20 minutes; otherwise it is left out (see `.cache/match-report.json`).

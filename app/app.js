@@ -18,7 +18,12 @@ const fmtStamp = new Intl.DateTimeFormat("fi-FI", { timeZone: TZ, weekday: "shor
 
 let data = null;
 let fetchedAt = 0;
-let state = { hidden: [], nhlFi: true, freeOnly: false };
+let state = { hidden: [], freeOnly: false, primeOnly: true };
+
+// Primetime: broadcasts starting 15.00–23.00 Finnish time (both ends inclusive).
+const PRIME_FROM = "15:00", PRIME_TO = "23:00";
+const fmtHM = new Intl.DateTimeFormat("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+const isPrimetime = (ms) => { const hm = fmtHM.format(new Date(ms)); return hm >= PRIME_FROM && hm <= PRIME_TO; };
 
 function loadState() {
   try {
@@ -44,7 +49,6 @@ function dayLabel(key, todayKey, tomorrowKey, sample) {
 function visibleBroadcasts(ev) {
   return ev.broadcasts.filter((b) => {
     if (state.freeOnly && !b.free) return false;
-    if (ev.sport === "nhl" && state.nhlFi && b.language !== "fi") return false;
     return true;
   });
 }
@@ -83,6 +87,7 @@ function renderList() {
     if (state.hidden.includes(ev.sport)) continue;
     const start = Date.parse(ev.start), end = Date.parse(ev.end);
     if (end <= now) continue;
+    if (state.primeOnly && !isPrimetime(start)) continue;
     const bcs = visibleBroadcasts(ev);
     if (!bcs.length) continue;
 
@@ -104,7 +109,6 @@ function renderList() {
     const primary = bcs.find((b) => b.free) || bcs[0];
     row.href = primary.url || "#";
     if (start <= now) row.classList.add("now");
-    if (ev.sport === "nhl" && !state.nhlFi && bcs.every((b) => b.language == null)) row.classList.add("lang-unknown");
     const t = row.querySelector(".t");
     t.textContent = time(ev.start);
     t.dateTime = ev.start;
@@ -115,7 +119,7 @@ function renderList() {
     for (const b of bcs) {
       const span = document.createElement("span");
       span.className = "svc" + (b.free ? " free" : "") + (b.manual ? " manual" : "");
-      span.textContent = b.service + (b.language === "en" ? " (eng)" : "");
+      span.textContent = b.service;
       where.append(span);
     }
     row.setAttribute("aria-label",
@@ -145,7 +149,6 @@ function renderFoot() {
       : `${SOURCE_NAMES[name]}: haku epäonnistui, tämän lähteen lähetykset puuttuvat.`);
   }
   if (data.events.some((e) => e.broadcasts.some((b) => b.manual))) add("* Käsin lisätty lähetys.");
-  add("NHL ja NFL: vain klo 16–23 alkavat pelit.");
   add("Lähetystiedot: Viaplay, Liiga, MTV, Ruutu ja Elisa Viihde. Kaikki ajat Suomen aikaa.");
 }
 
@@ -177,9 +180,9 @@ async function load() {
 }
 
 loadState();
-$("nhlFi").checked = state.nhlFi;
+$("primeOnly").checked = state.primeOnly;
+$("primeOnly").addEventListener("change", (e) => { state.primeOnly = e.target.checked; saveState(); renderList(); });
 $("freeOnly").checked = state.freeOnly;
-$("nhlFi").addEventListener("change", (e) => { state.nhlFi = e.target.checked; saveState(); renderList(); });
 $("freeOnly").addEventListener("change", (e) => { state.freeOnly = e.target.checked; saveState(); renderList(); });
 
 load();

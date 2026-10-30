@@ -93,7 +93,7 @@ body {
 
 .toggles { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 2px 16px 6px; }
 .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 32px; }
-.toggle input { width: 18px; height: 18px; accent-color: var(--c-nhl); margin: 0; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--free); margin: 0; }
 
 main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 
@@ -145,7 +145,6 @@ main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
   color: var(--live);
   margin-top: 4px;
 }
-.ev.lang-unknown .title::after { content: " (kieli?)"; font-weight: 400; color: var(--muted); font-size: 13px; }
 
 .empty, .error { padding: 32px 16px; color: var(--muted); }
 .error { color: var(--ink); }

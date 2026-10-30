@@ -3,8 +3,8 @@
   "timezone": "Europe/Helsinki",
   "sports": {
     "liiga":  { "name": "Liiga",     "enabled": true },
-    "nhl":    { "name": "NHL",       "enabled": true, "start_window": ["16:00", "23:00"] },
-    "nfl":    { "name": "NFL",       "enabled": true, "start_window": ["16:00", "23:00"] },
+    "nhl":    { "name": "NHL",       "enabled": true },
+    "nfl":    { "name": "NFL",       "enabled": true },
     "f1":     { "name": "Formula 1", "enabled": true },
     "motogp": { "name": "MotoGP",    "enabled": true },
     "moto2":  { "name": "Moto2",     "enabled": true },

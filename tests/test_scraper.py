@@ -214,13 +214,9 @@ class BuildTests(unittest.TestCase):
         data = json.loads((FIX.parent / ".tmp-site" / "schedule.json").read_text())
         sports = {e["sport"] for e in data["events"]}
         self.assertEqual(sports, {"f1", "nhl", "liiga", "nfl"})
-        hel = lambda e: datetime.fromisoformat(e["start"].replace("Z", "+00:00")).astimezone(HEL).strftime("%H:%M")
-        for e in data["events"]:
-            if e["sport"] in ("nhl", "nfl"):
-                self.assertTrue("16:00" <= hel(e) <= "23:00", e)
-        self.assertEqual(sorted(e["title"] for e in data["events"] if e["sport"] == "nfl"),
-                         ["Jacksonville Jaguars – Miami Dolphins", "Kansas City Chiefs – Buffalo Bills"])
-        self.assertNotIn("Edmonton Oilers – Dallas Stars", [e["title"] for e in data["events"]])
+        # No build-time window by default: night games stay in the data; the app filters primetime.
+        self.assertEqual(len([e for e in data["events"] if e["sport"] == "nfl"]), 4)
+        self.assertIn("Edmonton Oilers – Dallas Stars", [e["title"] for e in data["events"]])
         self.assertEqual([e["start"] for e in data["events"]], sorted(e["start"] for e in data["events"]))
         self.assertEqual(data["status"]["viaplay-darts"]["state"], "ok")
 

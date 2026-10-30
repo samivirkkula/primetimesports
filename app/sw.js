@@ -1,5 +1,5 @@
 // Network first, cached copy when offline. Bump VERSION when app files change.
-const VERSION = "urheilu-tv-2";
+const VERSION = "urheilu-tv-4";
 const SHELL = ["./", "index.html", "app.css", "app.js", "manifest.webmanifest", "icons/icon-192.png", "fonts/vt323.woff", "fonts/archivo.woff"];
 
 self.addEventListener("install", (e) => {
