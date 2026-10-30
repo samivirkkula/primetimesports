@@ -14,7 +14,7 @@ A personal sports TV guide for iPhone. It shows only the sports I follow, with t
 | F1, MotoGP, Moto2, Moto3 | Viaplay schedule API (`…/moottoriurheilu/<series>`) | Viaplay |
 | Darts | Viaplay schedule API (path discovered from the sports landing page) | Viaplay |
 
-The app is a static PWA. A GitHub Actions workflow fetches the sources every three hours, builds `schedule.json` and publishes the app with GitHub Pages. Opening the app never calls the providers' APIs.
+The app is a static PWA. A GitHub Actions workflow fetches the sources once a day at 16.00 Finnish time (and on every push or manual run), builds `schedule.json` and publishes the app with GitHub Pages. Opening the app never calls the providers' APIs.
 
 ## Structure
 
@@ -59,7 +59,7 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 
 ## Resilience
 
-The last successful result of each source is cached in `.cache/` (kept between workflow runs). If a source fails, data up to 48 hours old is used and the app footer says which source failed. If every source fails, the workflow fails and the previously published site stays up.
+The last successful result of each source is cached in `.cache/` (kept between workflow runs). If a source fails, data up to 72 hours old is used and the app footer says which source failed. If every source fails, the workflow fails and the previously published site stays up.
 
 ## Known gaps
 

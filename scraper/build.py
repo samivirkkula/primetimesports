@@ -20,7 +20,7 @@ from . import elisa, liiga, mtv, ruutu, viaplay
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
 OUT = ROOT / "site"
-MAX_CACHE_AGE = timedelta(hours=48)
+MAX_CACHE_AGE = timedelta(hours=72)
 STOP = {"nhl", "liiga", "live", "suora", "lähetys", "ottelu", "jääkiekko", "runkosarja"}
 
 
