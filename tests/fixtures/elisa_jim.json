@@ -1,0 +1,48 @@
+{
+ "timezone": "Europe/Helsinki",
+ "schedule": [
+  {
+   "date": "2026-11-01",
+   "programs": [
+    {
+     "id": 1,
+     "name": "NFL",
+     "shortDescription": "Suora lähetys. Runkosarjan ottelu.",
+     "startTimeUTC": 1793555700000,
+     "endTimeUTC": 1793568600000,
+     "channel": {
+      "name": "Jim"
+     }
+    },
+    {
+     "id": 2,
+     "name": "NFL: kooste",
+     "shortDescription": "",
+     "startTimeUTC": 1793606400000,
+     "endTimeUTC": 1793610000000,
+     "channel": {
+      "name": "Jim"
+     }
+    },
+    {
+     "id": 3,
+     "name": "Salkkarit",
+     "shortDescription": "",
+     "startTimeUTC": 1793552400000,
+     "channel": {
+      "name": "Nelonen"
+     }
+    },
+    {
+     "id": 4,
+     "name": "NBA",
+     "shortDescription": "Suora",
+     "startTimeUTC": 1793563200000,
+     "channel": {
+      "name": "TV5"
+     }
+    }
+   ]
+  }
+ ]
+}

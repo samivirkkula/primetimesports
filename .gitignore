@@ -1,0 +1,7 @@
+.cache/
+site/
+tests/.tmp-cache/
+tests/.tmp-site/
+__pycache__/
+*.pyc
+.DS_Store

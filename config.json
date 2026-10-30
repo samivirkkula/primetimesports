@@ -1,0 +1,23 @@
+{
+  "days": 14,
+  "timezone": "Europe/Helsinki",
+  "sports": {
+    "liiga":  { "name": "Liiga",     "enabled": true },
+    "nhl":    { "name": "NHL",       "enabled": true, "start_window": ["16:00", "23:00"] },
+    "nfl":    { "name": "NFL",       "enabled": true, "start_window": ["16:00", "23:00"] },
+    "f1":     { "name": "Formula 1", "enabled": true },
+    "motogp": { "name": "MotoGP",    "enabled": true },
+    "moto2":  { "name": "Moto2",     "enabled": true },
+    "moto3":  { "name": "Moto3",     "enabled": true },
+    "darts":  { "name": "Darts",     "enabled": true }
+  },
+  "viaplay": {
+    "f1":     { "path": "urheilu/moottoriurheilu/formula-1", "format": "Formula 1" },
+    "motogp": { "path": "urheilu/moottoriurheilu/motogp",    "format": "MotoGP" },
+    "moto2":  { "path": "urheilu/moottoriurheilu/moto2",     "format": "Moto2" },
+    "moto3":  { "path": "urheilu/moottoriurheilu/moto3",     "format": "Moto3" },
+    "nhl":    { "path": "urheilu/jaakiekko/nhl",             "format": "NHL" },
+    "darts":  { "path": null,                                "format": null, "discover": "darts" }
+  },
+  "motorsport_extra_feeds": ["Track Positioning", "Timing", "Onboard", "Pitlane", "Data", "Studio", "Driver Tracker"]
+}

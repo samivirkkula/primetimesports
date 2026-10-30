@@ -1,0 +1,16 @@
+[
+  {
+    "_example": true,
+    "_ohje": "Lisää tähän käsin vahvistetut lähetykset (esim. Disney+:n suomeksi selostetut NHL-ottelut). Poista _example-rivi, niin rivi otetaan käyttöön.",
+    "sport": "nhl",
+    "series": "NHL",
+    "title": "Florida Panthers – Carolina Hurricanes",
+    "start": "2026-11-02T18:00:00Z",
+    "end": "2026-11-02T21:00:00Z",
+    "service": "Disney+",
+    "channel": null,
+    "free": false,
+    "language": "fi",
+    "url": "https://www.disneyplus.com/"
+  }
+]

@@ -1,0 +1,52 @@
+[
+ {
+  "id": 1,
+  "season": 2027,
+  "start": "2026-10-31T14:00:00Z",
+  "homeTeamName": "Tappara",
+  "awayTeamName": "Ilves",
+  "serie": 1,
+  "started": false,
+  "ended": false
+ },
+ {
+  "id": 2,
+  "season": 2027,
+  "start": "2026-11-01T15:30:00Z",
+  "homeTeamName": "JYP",
+  "awayTeamName": "TPS",
+  "serie": 1,
+  "started": false,
+  "ended": false
+ },
+ {
+  "id": 3,
+  "season": 2027,
+  "start": "2026-10-20T16:30:00Z",
+  "homeTeamName": "HIFK",
+  "awayTeamName": "Kärpät",
+  "serie": 1,
+  "started": true,
+  "ended": true
+ },
+ {
+  "id": 4,
+  "season": 2027,
+  "start": null,
+  "homeTeamName": null,
+  "awayTeamName": null,
+  "serie": 1,
+  "started": false,
+  "ended": false
+ },
+ {
+  "id": 5,
+  "season": 2027,
+  "start": "2026-12-20T16:30:00Z",
+  "homeTeamName": "Lukko",
+  "awayTeamName": "Pelicans",
+  "serie": 1,
+  "started": false,
+  "ended": false
+ }
+]

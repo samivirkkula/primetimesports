@@ -1,0 +1,122 @@
+{
+ "responseCode": {
+  "httpStatus": 200
+ },
+ "_embedded": {
+  "viaplay:blocks": [
+   {
+    "type": "list",
+    "_embedded": {
+     "viaplay:products": [
+      {
+       "type": "sport",
+       "content": {
+        "title": "Meksikon Grand Prix",
+        "format": {
+         "title": "Formula 1"
+        },
+        "originalTitle": "2. vapaat harjoitukset"
+       },
+       "epg": {
+        "start": "2026-10-30T19:50:00Z",
+        "end": "2026-10-30T22:05:00Z"
+       },
+       "system": {
+        "flags": [
+         "liveStream"
+        ],
+        "guid": "moottoriurheilu/formula-1/meksikon-grand-prix/s1"
+       },
+       "recording": {
+        "airingType": "live"
+       },
+       "publicPath": "moottoriurheilu/formula-1/meksikon-grand-prix/s1"
+      },
+      {
+       "type": "sport",
+       "content": {
+        "title": "Track Positioning",
+        "format": {
+         "title": "Formula 1"
+        },
+        "originalTitle": "Meksikon Grand Prix | 2. vapaat harjoitukset"
+       },
+       "epg": {
+        "start": "2026-10-30T20:00:00Z",
+        "end": "2026-10-30T22:10:00Z"
+       },
+       "system": {
+        "flags": [
+         "liveStream"
+        ],
+        "guid": "moottoriurheilu/formula-1/track-positioning/s2"
+       },
+       "recording": {
+        "airingType": "live"
+       },
+       "publicPath": "moottoriurheilu/formula-1/track-positioning/s2"
+      },
+      {
+       "type": "sport",
+       "content": {
+        "title": "Meksikon Grand Prix",
+        "format": {
+         "title": "Formula 1"
+        },
+        "originalTitle": "Kilpailu"
+       },
+       "epg": {
+        "start": "2026-10-26T20:00:00Z",
+        "end": "2026-10-26T22:00:00Z"
+       },
+       "system": {
+        "flags": [],
+        "guid": "moottoriurheilu/formula-1/meksikon-grand-prix/s0"
+       },
+       "recording": {
+        "airingType": "replay"
+       },
+       "publicPath": "moottoriurheilu/formula-1/meksikon-grand-prix/s0"
+      },
+      {
+       "type": "sport",
+       "content": {
+        "title": "Meksikon Grand Prix",
+        "format": {
+         "title": "Formula 1"
+        },
+        "originalTitle": "Aika-ajot"
+       },
+       "epg": {
+        "start": "2026-10-31T21:00:00Z",
+        "end": "2026-10-31T22:15:00Z"
+       },
+       "system": {
+        "flags": [
+         "liveStream"
+        ],
+        "guid": "moottoriurheilu/formula-1/meksikon-grand-prix/s3"
+       },
+       "recording": {
+        "airingType": "live"
+       },
+       "publicPath": "moottoriurheilu/formula-1/meksikon-grand-prix/s3"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "_links": {
+  "viaplay:days": [
+   {
+    "date": "2026-10-31",
+    "href": "https://content.viaplay.fi/pcdash-fi/urheilu/moottoriurheilu/formula-1?date=2026-10-31"
+   },
+   {
+    "date": "2026-11-01",
+    "href": "https://content.viaplay.fi/pcdash-fi/urheilu/moottoriurheilu/formula-1?date=2026-11-01"
+   }
+  ]
+ }
+}

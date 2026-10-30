@@ -1,0 +1,68 @@
+{
+ "_embedded": {
+  "viaplay:blocks": [
+   {
+    "type": "list",
+    "_embedded": {
+     "viaplay:products": [
+      {
+       "type": "sport",
+       "content": {
+        "title": "Detroit Red Wings – Winnipeg Jets",
+        "format": {
+         "title": "NHL"
+        },
+        "originalTitle": "Runkosarja",
+        "description": {
+         "synopsis": "Englanninkielinen selostus."
+        }
+       },
+       "epg": {
+        "start": "2026-11-01T19:00:00Z",
+        "end": "2026-11-01T22:00:00Z"
+       },
+       "system": {
+        "flags": [
+         "liveStream"
+        ],
+        "guid": "jaakiekko/nhl/det-wpg/s10"
+       },
+       "recording": {
+        "airingType": "live"
+       },
+       "publicPath": "jaakiekko/nhl/det-wpg/s10"
+      },
+      {
+       "type": "sport",
+       "content": {
+        "title": "Edmonton Oilers – Dallas Stars",
+        "format": {
+         "title": "NHL"
+        },
+        "originalTitle": "Runkosarja",
+        "description": {
+         "synopsis": "Selostus Antti Mäkinen, asiantuntija Tuomas Grönman."
+        }
+       },
+       "epg": {
+        "start": "2026-11-03T01:00:00Z",
+        "end": "2026-11-03T04:00:00Z"
+       },
+       "system": {
+        "flags": [
+         "liveStream"
+        ],
+        "guid": "jaakiekko/nhl/edm-dal/s11"
+       },
+       "recording": {
+        "airingType": "live"
+       },
+       "publicPath": "jaakiekko/nhl/edm-dal/s11"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "_links": {}
+}

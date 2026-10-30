@@ -1,0 +1,37 @@
+{
+ "data": {
+  "media": {
+   "id": "sub",
+   "epg": [
+    {
+     "broadcastId": "a",
+     "title": "Salatut elämät",
+     "start": "2026-11-01T17:00:00+02:00",
+     "end": "2026-11-01T17:30:00+02:00",
+     "type": "EPISODE"
+    },
+    {
+     "broadcastId": "b",
+     "title": "NHL: Detroit Red Wings – Winnipeg Jets",
+     "start": "2026-11-01T20:45:00+02:00",
+     "end": "2026-11-02T00:00:00+02:00",
+     "type": "LIVE"
+    },
+    {
+     "broadcastId": "c",
+     "title": "NHL: Detroit Red Wings – Winnipeg Jets",
+     "start": "2026-11-02T10:00:00+02:00",
+     "end": "2026-11-02T12:00:00+02:00",
+     "type": "RERUN"
+    },
+    {
+     "broadcastId": "d",
+     "title": "Liiga: JYP–TPS",
+     "start": "2026-11-01T17:15:00+02:00",
+     "end": "2026-11-01T20:00:00+02:00",
+     "type": "LIVE"
+    }
+   ]
+  }
+ }
+}

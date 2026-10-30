@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Urheilu-TV</title>
+<meta name="description" content="Omat urheilulajit, tv- ja suoratoistolähetykset Suomessa">
+<meta name="theme-color" content="#0C1F5C" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F6FC" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Urheilu-TV">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preload" href="fonts/vt323.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="top">
+  <h1>Urheilu-TV</h1>
+  <p class="updated" id="updated">Ladataan…</p>
+</header>
+
+<nav class="filters" aria-label="Lajit">
+  <div class="chips" id="chips" role="group" aria-label="Näytettävät lajit"></div>
+  <div class="toggles">
+    <label class="toggle"><input type="checkbox" id="nhlFi" checked> NHL vain suomeksi selostettuna</label>
+    <label class="toggle"><input type="checkbox" id="freeOnly"> Vain ilmaiskanavat</label>
+  </div>
+</nav>
+
+<main id="list" aria-live="polite"></main>
+
+<footer class="foot" id="foot"></footer>
+
+<template id="row">
+  <a class="ev" target="_blank" rel="noopener">
+    <time class="t"></time>
+    <span class="bar" aria-hidden="true"></span>
+    <span class="what">
+      <span class="series"></span>
+      <span class="title"></span>
+      <span class="session"></span>
+    </span>
+    <span class="where"></span>
+  </a>
+</template>
+
+<script src="app.js" defer></script>
+</body>
+</html>

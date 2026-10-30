@@ -1,0 +1,58 @@
+name: Päivitä aikataulu ja julkaise
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # 8 kertaa vuorokaudessa (UTC); GitHub voi viivästää ajoa
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Viimeisin onnistunut haku per lähde: jos lähde on hetkellisesti rikki,
+      # käytetään enintään 48 h vanhaa tietoa.
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: sources-${{ github.run_id }}
+          restore-keys: sources-
+
+      - name: Testit
+        run: python -m unittest discover -s tests -t .
+
+      - name: Hae lähetystiedot
+        run: python -m scraper.build
+
+      - name: Kokoa sivusto
+        run: cp -r app/. site/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
