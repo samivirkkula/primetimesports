@@ -73,9 +73,12 @@ function renderChips() {
   }
 }
 
-// Day accordion: today is open, other days are stacked closed and open when scrolled
-// to or tapped. Choices live in memory so the minute refresh keeps them.
-const dayState = new Map(); // dayKey -> "open" | "closed"
+// Day accordion: today is open, other days are stacked closed. Scrolling down opens
+// the next day when its header reaches the lower part of the screen; scrolling back up
+// closes those auto-opened days again. A tap opens or closes a day for good.
+// State lives in memory so the minute refresh keeps it.
+const dayState = new Map(); // dayKey -> "auto" (opened by scrolling) | "open" | "closed" (by the user)
+const OPEN_LINE = 0.8, CLOSE_LINE = 0.86; // fractions of the viewport height; the gap prevents flicker
 
 function dayBlock(day, open) {
   const sec = document.createElement("section");
@@ -108,7 +111,7 @@ function dayBlock(day, open) {
   chev.classList.add("chev");
   chev.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
   btn.append(name, date, sum, chev);
-  btn.addEventListener("click", () => setDay(sec, !sec.classList.contains("open"), true));
+  btn.addEventListener("click", () => setDay(sec, !sec.classList.contains("open"), "user"));
   h.append(btn);
   const body = document.createElement("div");
   body.className = "daybody";
@@ -124,12 +127,14 @@ function dayBlock(day, open) {
   return sec;
 }
 
-function setDay(sec, open, byUser) {
+function setDay(sec, open, how) {
   sec.classList.toggle("open", open);
   sec.querySelector(".day").setAttribute("aria-expanded", String(open));
   sec.querySelector(".daybody").inert = !open;
-  // An automatic open is remembered as open; only the user can make a day stay closed.
-  dayState.set(sec.dataset.key, open ? "open" : (byUser ? "closed" : dayState.get(sec.dataset.key)));
+  const key = sec.dataset.key;
+  if (how === "user") dayState.set(key, open ? "open" : "closed");
+  else if (open) dayState.set(key, "auto");
+  else dayState.delete(key); // closed by scrolling: may open again on the way down
   updateClosedPadding();
 }
 
@@ -142,15 +147,33 @@ function updateClosedPadding() {
 let lastScrollY = 0;
 function onScroll() {
   const y = window.scrollY;
-  const down = y > lastScrollY;
+  const maxY = document.documentElement.scrollHeight - window.innerHeight;
+  if (y < 0 || y > maxY) return; // iOS rubber-band bounce
+  if (y <= 2) {
+    // Back at the top: return to the starting view.
+    for (const sec of document.querySelectorAll(".dayblock.open")) {
+      if (dayState.get(sec.dataset.key) === "auto") setDay(sec, false, "auto");
+    }
+    lastScrollY = y;
+    return;
+  }
+  const delta = y - lastScrollY;
+  if (Math.abs(delta) < 4) return;
   lastScrollY = y;
-  if (!down) return;
-  const line = window.innerHeight * 0.8;
-  for (const sec of document.querySelectorAll(".dayblock:not(.open)")) {
-    if (dayState.get(sec.dataset.key) === "closed") continue;
-    if (sec.getBoundingClientRect().top < line) {
-      setDay(sec, true, false);
+  const vh = window.innerHeight;
+  const blocks = [...document.querySelectorAll(".dayblock")];
+  if (delta > 0) {
+    for (const sec of blocks) {
+      if (sec.classList.contains("open") || dayState.get(sec.dataset.key) === "closed") continue;
+      if (sec.getBoundingClientRect().top < vh * OPEN_LINE) setDay(sec, true, "auto");
       break; // one day per scroll step; opening pushes the next ones down
+    }
+  } else {
+    // Bottom-most first: a day below the reading position closes without moving what is on screen.
+    for (const sec of blocks.reverse()) {
+      if (dayState.get(sec.dataset.key) !== "auto") continue;
+      if (sec.getBoundingClientRect().top > vh * CLOSE_LINE) setDay(sec, false, "auto");
+      break;
     }
   }
 }
@@ -221,7 +244,7 @@ function renderList() {
   const defaultOpen = days.some((d) => d.key === todayKey) ? todayKey : days[0].key;
   for (const day of days) {
     const saved = dayState.get(day.key);
-    const open = saved ? saved === "open" : day.key === defaultOpen;
+    const open = saved ? saved !== "closed" : day.key === defaultOpen;
     list.append(dayBlock(day, open));
   }
   updateClosedPadding();

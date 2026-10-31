@@ -50,7 +50,7 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 
 ## Day list
 
-Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen; tapping a header opens or closes it. A day the user closes stays closed while scrolling. The state lives in memory, so the minute refresh keeps it.
+Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen, and scrolling back up closes those days again, so the top of the list returns to the starting view. Tapping a header opens or closes a day for good: scrolling does not change a day the user has tapped. The state lives in memory, so the minute refresh keeps it.
 
 ## Primetime
 
