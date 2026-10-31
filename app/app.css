@@ -1,45 +1,44 @@
-@font-face { font-family: "VT323"; src: url("fonts/vt323.woff") format("woff"); font-display: swap; }
 @font-face { font-family: "Archivo"; src: url("fonts/archivo.woff") format("woff"); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap; }
 
+/* Jää: ice white and midnight blue, red like the goal line. */
 :root {
-  --bg: #0C1F5C;
-  --bg-deep: #081544;
-  --ink: #F2F4FF;
-  --muted: #9CA8D8;
-  --rule: rgba(156, 168, 216, .22);
-  --head: #F7D417;
-  --live: #F7D417;
-  --free: #7CE8A0;
-  --c-liiga: #F7D417;
-  --c-nhl: #4FD8E6;
-  --c-nfl: #FF9A3C;
-  --c-f1: #FF5A4F;
-  --c-motogp: #57E07C;
-  --c-moto2: #A9E85E;
-  --c-moto3: #DDF27E;
-  --c-darts: #EE77EE;
+  --bg: #0F1B26;
+  --bg-deep: #172634;
+  --ink: #E8F0F6;
+  --muted: #93A6B6;
+  --rule: #24364A;
+  --head: #E8F0F6;
+  --live: #FF6B70;
+  --free: #6EDC95;
+  --c-liiga: #F2CC4A;
+  --c-nhl: #7DB4FF;
+  --c-nfl: #FF9F5A;
+  --c-f1: #FF6B70;
+  --c-motogp: #5FD992;
+  --c-moto2: #B5E063;
+  --c-moto3: #E3DC6B;
+  --c-darts: #DD8BFF;
   --sans: "Archivo", system-ui, -apple-system, sans-serif;
-  --tt: "VT323", ui-monospace, monospace;
   color-scheme: dark;
 }
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #F4F6FC;
-    --bg-deep: #E6EAF6;
-    --ink: #0C1F5C;
-    --muted: #4E5C8F;
-    --rule: rgba(12, 31, 92, .14);
-    --head: #0C1F5C;
-    --live: #B5121B;
-    --free: #13753A;
-    --c-liiga: #8C6E00;
-    --c-nhl: #0A8FA0;
-    --c-nfl: #B4580A;
-    --c-f1: #D7261C;
-    --c-motogp: #1E9A45;
-    --c-moto2: #5E9E17;
-    --c-moto3: #8FA313;
-    --c-darts: #B03CB0;
+    --bg: #F3F7FA;
+    --bg-deep: #E3EBF1;
+    --ink: #0E2233;
+    --muted: #536577;
+    --rule: #D6E0E8;
+    --head: #0E2233;
+    --live: #D21F2B;
+    --free: #17803D;
+    --c-liiga: #8A6A00;
+    --c-nhl: #1F5FBF;
+    --c-nfl: #AE5509;
+    --c-f1: #D21F2B;
+    --c-motogp: #1E7F45;
+    --c-moto2: #577911;
+    --c-moto3: #767000;
+    --c-darts: #9B2FB8;
     color-scheme: light;
   }
 }
@@ -61,10 +60,10 @@ body {
 }
 .top h1 {
   margin: 0;
-  font: 400 34px/1 var(--tt);
+  font: 700 26px/1 var(--sans); font-stretch: 80%;
   color: var(--head);
   white-space: nowrap;
-  letter-spacing: .02em;
+  letter-spacing: -.01em;
 }
 .updated { margin: 0; color: var(--muted); font-size: 13px; text-align: right; white-space: pre-line; }
 
@@ -133,11 +132,10 @@ main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 .remind:active { background: var(--bg-deep); color: var(--head); }
 .remind:focus-visible { outline: 2px solid var(--head); outline-offset: -2px; }
 .t {
-  font: 400 31px/0.9 var(--tt);
+  font: 600 22px/1.1 var(--sans); font-stretch: 85%;
   color: var(--ink);
-  padding-top: 1px;
   font-variant-numeric: tabular-nums;
-  min-width: 2.6em;
+  min-width: 3em;
 }
 .bar { align-self: stretch; border-radius: 2px; background: var(--c); min-height: 32px; }
 .what { display: flex; flex-direction: column; min-width: 0; }
@@ -165,5 +163,5 @@ main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 .foot p { margin: 4px 0; }
 
 @media (min-width: 560px) {
-  .t { font-size: 34px; }
+  .t { font-size: 24px; }
 }

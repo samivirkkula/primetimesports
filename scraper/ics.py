@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-PRODID = "-//primetimesports//Urheilu-TV//FI"
+PRODID = "-//primetimesports//Ruutuaikataulu//FI"
 
 
 def _esc(text: str) -> str:

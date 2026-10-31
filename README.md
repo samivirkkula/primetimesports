@@ -1,4 +1,4 @@
-# Urheilu-TV
+# Ruutuaikataulu
 
 A personal sports TV guide for iPhone. It shows only the sports I follow, with the Finnish service or channel each broadcast is on:
 
@@ -74,4 +74,4 @@ The last successful result of each source is cached in `.cache/` (kept between w
 
 ## Fonts
 
-VT323 and Archivo, self-hosted from Google Fonts under the SIL Open Font License (`app/fonts/OFL-*.txt`).
+Archivo, self-hosted from Google Fonts under the SIL Open Font License (`app/fonts/OFL-Archivo.txt`).
