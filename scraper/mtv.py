@@ -1,7 +1,8 @@
 """MTV's public TV-guide GraphQL API (used by mtv.fi/kanavat/aikataulu).
 
-Only LIVE programmes on the free-to-air channels MTV3 and Sub are used:
-they mark free Liiga games and the weekly NHL game on Sub.
+Only LIVE programmes are used. Free-to-air channels (MTV3, Sub, Ava) mark free Liiga
+games, the weekly NHL game on Sub and free rally stages. MTV's pay sports channels are
+read too, but only used for the World Rally Championship.
 """
 from __future__ import annotations
 
@@ -13,7 +14,9 @@ from .http import post_json, request
 
 API = "https://nordic-gateway.mtv.a2d.tv/graphql"
 GUIDE = "https://www.mtv.fi/kanavat/aikataulu"
-CHANNELS = {"MTV3": re.compile(r"^MTV ?3$", re.I), "MTV Sub": re.compile(r"^(MTV )?SUB$", re.I)}
+CHANNELS = {"MTV3": re.compile(r"^MTV ?3$", re.I), "MTV Sub": re.compile(r"^(MTV )?SUB$", re.I),
+            "MTV Ava": re.compile(r"^(MTV )?AVA$", re.I)}
+PAY_CHANNELS = re.compile(r"urheilu|sport", re.I)
 
 EPG_QUERY = """query Epg($id: ID!, $date: Date) {
   media(id: $id) { ... on Channel {
@@ -43,7 +46,7 @@ class _Client:
         raise RuntimeError("MTV:n web-asiakkaan versiota ei löytynyt")
 
 
-def parse_epg(raw: dict, channel: str) -> list[dict]:
+def parse_epg(raw: dict, channel: str, free: bool = True) -> list[dict]:
     epg = (((raw or {}).get("data") or {}).get("media") or {}).get("epg")
     if not isinstance(epg, list):
         raise ValueError("MTV:n ohjelmaoppaan rakenne muuttui")
@@ -52,7 +55,7 @@ def parse_epg(raw: dict, channel: str) -> list[dict]:
         if e.get("type") != "LIVE" or not e.get("start"):
             continue
         out.append({"title": e.get("title", ""), "start": _iso(e["start"]),
-                    "end": _iso(e.get("end")), "channel": channel})
+                    "end": _iso(e.get("end")), "channel": channel, "free": free})
     return out
 
 
@@ -75,18 +78,21 @@ def fetch(*, first_date: date, days: int) -> list[dict]:
             raise
         client.discover_version()
         channels = client.query("query Channels { channels { id title } }")
-    found = {}
+    found: list[tuple[str, str, bool]] = []
     for c in channels["data"]["channels"]:
-        for name, rx in CHANNELS.items():
-            if rx.match(c.get("title", "")):
-                found[name] = c["id"]
-    if not found:
+        title = c.get("title", "")
+        free_name = next((name for name, rx in CHANNELS.items() if rx.match(title)), None)
+        if free_name:
+            found.append((free_name, c["id"], True))
+        elif PAY_CHANNELS.search(title):
+            found.append((title, c["id"], False))
+    if not any(free for _, _, free in found):
         raise RuntimeError("MTV3/Sub puuttuu MTV:n kanavalistasta")
     out = []
-    for name, cid in found.items():
+    for name, cid, free in found:
         for i in range(days):
             d = first_date + timedelta(days=i)
             # The broadcast day starts at 06:00; noon UTC selects the intended Finnish day.
             ms = int(datetime(d.year, d.month, d.day, 12, tzinfo=timezone.utc).timestamp() * 1000)
-            out += parse_epg(client.query(EPG_QUERY, {"id": cid, "date": ms}), name)
+            out += parse_epg(client.query(EPG_QUERY, {"id": cid, "date": ms}), name, free)
     return out

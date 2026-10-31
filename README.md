@@ -9,6 +9,8 @@ A personal sports TV guide for iPhone. It shows only the sports I follow, with t
 | NHL | Viaplay schedule API (`content.viaplay.fi/pcdash-fi/urheilu/jaakiekko/nhl`) | Viaplay |
 | NHL on Sub | MTV TV guide, `LIVE` programmes with "NHL" in the title | MTV Sub, marked free |
 | NHL on Disney+ | Manual entries in `data/overrides.json` | Disney+ (marked with *) |
+| World Rally Championship | WRC results API (`api.wrc.com`: active-season calendar + event itinerary), one row per special stage | MTV Katsomo+ (all stages live) |
+| WRC free-to-air | MTV TV guide, `LIVE` rally programmes on MTV3 / Sub / Ava, attached to the stages they cover | MTV3 etc., marked free |
 | NFL | Ruutu NFL page (`ruutu.fi/ohjelmat/nfl`, `/stream/` cards; "Selostus suomi" marks Finnish commentary) | Ruutu+ |
 | NFL free-to-air | Elisa Viihde EPG API (`viihde-epg-api-prod.csf.elisa.fi/epg`), live NFL on Jim / Nelonen / Hero | Jim etc., marked free |
 | F1, MotoGP, Moto2, Moto3 | Viaplay schedule API (`…/moottoriurheilu/<series>`) | Viaplay |
@@ -22,7 +24,7 @@ The app is a static PWA. A GitHub Actions workflow fetches the sources once a da
 app/                  PWA: index.html, app.css, app.js, sw.js, manifest, icons, fonts
 scraper/              Python 3.12, standard library only
   build.py            fetch → merge → site/schedule.json
-  viaplay.py liiga.py mtv.py ruutu.py elisa.py   one module per source
+  viaplay.py liiga.py mtv.py ruutu.py elisa.py wrc.py ics.py   one module per source
 config.json           sports, Viaplay paths, schedule length (14 days)
 data/overrides.json   manual broadcasts (Disney+ etc.)
 tests/                offline tests with fixtures
@@ -45,6 +47,10 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 2. Settings → Pages → Build and deployment → Source: **GitHub Actions**.
 3. Actions → *Päivitä aikataulu ja julkaise* → Run workflow.
 4. On the iPhone: open `https://<user>.github.io/<repo>/` in Safari → Share → Add to Home Screen.
+
+## Day list
+
+Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen; tapping a header opens or closes it. A day the user closes stays closed while scrolling. The state lives in memory, so the minute refresh keeps it.
 
 ## Primetime
 
@@ -70,6 +76,7 @@ The last successful result of each source is cached in `.cache/` (kept between w
 - **Viaplay API field names** are taken from public clients of the same API and are verified only against fixtures; the first live run is the real test.
 - **Ruutu's NFL page** is parsed from HTML (link, title, time and commentary-language image). A site redesign breaks it; the cached result is used for 48 h and the app footer shows the failure.
 - A free-to-air NFL broadcast whose guide title does not name the teams joins the single Finnish-commentary Ruutu game starting within 20 minutes; otherwise it is left out (see `.cache/match-report.json`).
+- **WRC API** field names come from public documentation of the same API (rallydatajunkie.com) and are verified only against fixtures. If it fails, MTV's rally programmes still appear as rows on their own.
 - Darts' Viaplay path is discovered automatically; if discovery fails, set `viaplay.darts.path` in `config.json`.
 
 ## Fonts

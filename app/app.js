@@ -6,7 +6,7 @@ const SOURCE_NAMES = {
   "viaplay-f1": "Viaplay F1", "viaplay-motogp": "Viaplay MotoGP", "viaplay-moto2": "Viaplay Moto2",
   "viaplay-moto3": "Viaplay Moto3", "viaplay-nhl": "Viaplay NHL", "viaplay-darts": "Viaplay darts",
   "liiga": "Liigan otteluohjelma", "mtv": "MTV:n ohjelmaopas",
-  "ruutu-nfl": "Ruudun NFL-ohjelma", "elisa": "Elisa Viihteen ohjelmaopas",
+  "ruutu-nfl": "Ruudun NFL-ohjelma", "elisa": "Elisa Viihteen ohjelmaopas", "wrc": "WRC:n aikataulu",
 };
 
 const $ = (id) => document.getElementById(id);
@@ -73,15 +73,95 @@ function renderChips() {
   }
 }
 
+// Day accordion: today is open, other days are stacked closed and open when scrolled
+// to or tapped. Choices live in memory so the minute refresh keeps them.
+const dayState = new Map(); // dayKey -> "open" | "closed"
+
+function dayBlock(day, open) {
+  const sec = document.createElement("section");
+  sec.className = "dayblock" + (open ? " open" : "");
+  sec.dataset.key = day.key;
+  const h = document.createElement("h2");
+  h.className = "dayhead";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "day";
+  btn.id = `h-${day.key}`;
+  btn.setAttribute("aria-expanded", String(open));
+  btn.setAttribute("aria-controls", `d-${day.key}`);
+  const name = document.createElement("span");
+  name.className = "dname";
+  name.textContent = day.name;
+  const date = document.createElement("small");
+  date.textContent = day.date;
+  const sum = document.createElement("span");
+  sum.className = "dsum";
+  for (const sport of day.sports) {
+    const dot = document.createElement("i");
+    dot.style.setProperty("--c", `var(--c-${sport})`);
+    sum.append(dot);
+  }
+  sum.append(day.rows.length === 1 ? "1 lähetys" : `${day.rows.length} lähetystä`);
+  const chev = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  chev.setAttribute("viewBox", "0 0 24 24");
+  chev.setAttribute("aria-hidden", "true");
+  chev.classList.add("chev");
+  chev.innerHTML = '<path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+  btn.append(name, date, sum, chev);
+  btn.addEventListener("click", () => setDay(sec, !sec.classList.contains("open"), true));
+  h.append(btn);
+  const body = document.createElement("div");
+  body.className = "daybody";
+  body.id = `d-${day.key}`;
+  body.setAttribute("role", "region");
+  body.setAttribute("aria-labelledby", btn.id);
+  if (!open) body.inert = true;
+  const inner = document.createElement("div");
+  inner.className = "dayinner";
+  inner.append(...day.rows);
+  body.append(inner);
+  sec.append(h, body);
+  return sec;
+}
+
+function setDay(sec, open, byUser) {
+  sec.classList.toggle("open", open);
+  sec.querySelector(".day").setAttribute("aria-expanded", String(open));
+  sec.querySelector(".daybody").inert = !open;
+  // An automatic open is remembered as open; only the user can make a day stay closed.
+  dayState.set(sec.dataset.key, open ? "open" : (byUser ? "closed" : dayState.get(sec.dataset.key)));
+  updateClosedPadding();
+}
+
+function updateClosedPadding() {
+  // While closed days remain, leave room below so scrolling can always reach and open them.
+  const list = $("list");
+  list.classList.toggle("has-closed", Boolean(list.querySelector(".dayblock:not(.open)")));
+}
+
+let lastScrollY = 0;
+function onScroll() {
+  const y = window.scrollY;
+  const down = y > lastScrollY;
+  lastScrollY = y;
+  if (!down) return;
+  const line = window.innerHeight * 0.8;
+  for (const sec of document.querySelectorAll(".dayblock:not(.open)")) {
+    if (dayState.get(sec.dataset.key) === "closed") continue;
+    if (sec.getBoundingClientRect().top < line) {
+      setDay(sec, true, false);
+      break; // one day per scroll step; opening pushes the next ones down
+    }
+  }
+}
+
 function renderList() {
   const list = $("list");
   const tpl = $("row");
   const now = Date.now();
   const todayKey = fmtDayKey.format(new Date(now));
   const tomorrowKey = fmtDayKey.format(new Date(now + 86400000));
-  list.textContent = "";
-  let lastKey = null;
-  let shown = 0;
+  const days = [];
 
   for (const ev of data.events) {
     if (state.hidden.includes(ev.sport)) continue;
@@ -92,17 +172,13 @@ function renderList() {
     if (!bcs.length) continue;
 
     const key = fmtDayKey.format(new Date(start));
-    if (key !== lastKey) {
-      const h = document.createElement("h2");
-      h.className = "day";
+    let day = days[days.length - 1];
+    if (!day || day.key !== key) {
       const [name, date] = dayLabel(key, todayKey, tomorrowKey, start);
-      h.append(name);
-      const s = document.createElement("small");
-      s.textContent = date;
-      h.append(s);
-      list.append(h);
-      lastKey = key;
+      day = { key, name, date, rows: [], sports: new Set() };
+      days.push(day);
     }
+    day.sports.add(ev.sport);
 
     const row = tpl.content.firstElementChild.cloneNode(true);
     row.style.setProperty("--c", `var(--c-${ev.sport})`);
@@ -128,18 +204,27 @@ function renderList() {
     }
     go.setAttribute("aria-label",
       `${time(ev.start)} ${ev.series || ""} ${ev.title} ${ev.session || ""}, ${bcs.map((b) => b.service).join(", ")}`);
-    list.append(row);
-    shown++;
+    day.rows.push(row);
   }
 
-  if (!shown) {
+  list.textContent = "";
+  if (!days.length) {
     const p = document.createElement("p");
     p.className = "empty";
     p.textContent = state.hidden.length === Object.keys(data.sports).length
       ? "Valitse ylhäältä ainakin yksi laji."
       : "Seuraavan kahden viikon aikana ei ole lähetyksiä näillä valinnoilla.";
     list.append(p);
+    updateClosedPadding();
+    return;
   }
+  const defaultOpen = days.some((d) => d.key === todayKey) ? todayKey : days[0].key;
+  for (const day of days) {
+    const saved = dayState.get(day.key);
+    const open = saved ? saved === "open" : day.key === defaultOpen;
+    list.append(dayBlock(day, open));
+  }
+  updateClosedPadding();
 }
 
 function renderFoot() {
@@ -153,7 +238,7 @@ function renderFoot() {
       : `${SOURCE_NAMES[name]}: haku epäonnistui, tämän lähteen lähetykset puuttuvat.`);
   }
   if (data.events.some((e) => e.broadcasts.some((b) => b.manual))) add("* Käsin lisätty lähetys.");
-  add("Lähetystiedot: Viaplay, Liiga, MTV, Ruutu ja Elisa Viihde. Kaikki ajat Suomen aikaa.");
+  add("Lähetystiedot: Viaplay, Liiga, MTV, Ruutu, Elisa Viihde ja WRC. Kaikki ajat Suomen aikaa.");
 }
 
 function render() {
@@ -213,6 +298,7 @@ bindToggle("primeOnly", "primeOnly");
 bindToggle("freeOnly", "freeOnly");
 
 load();
+window.addEventListener("scroll", onScroll, { passive: true });
 setInterval(() => data && renderList(), 60_000);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && Date.now() - fetchedAt > 15 * 60_000) load();

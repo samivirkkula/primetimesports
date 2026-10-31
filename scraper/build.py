@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import elisa, ics, liiga, mtv, ruutu, viaplay
+from . import elisa, ics, liiga, mtv, ruutu, viaplay, wrc
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
@@ -93,10 +93,13 @@ def add_broadcast(ev: dict, b: dict) -> None:
     ev["broadcasts"].append(b)
 
 
+RALLY = re.compile(r"\bWRC\b|\bMM-ralli|\bralli\b|\brally\b", re.I)
+
+
 def merge(viaplay_items, liiga_items, mtv_items, overrides,
-          nfl_items=(), free_nfl=()) -> tuple[list[dict], dict]:
-    report = {"mtv_unmatched": [], "nfl_free_unmatched": []}
-    events = [to_event(e) for e in liiga_items] + [to_event(e) for e in nfl_items]
+          nfl_items=(), free_nfl=(), wrc_items=()) -> tuple[list[dict], dict]:
+    report = {"mtv_unmatched": [], "nfl_free_unmatched": [], "wrc_mtv_unmatched": []}
+    events = [to_event(e) for e in liiga_items] + [to_event(e) for e in nfl_items] + [to_event(e) for e in wrc_items]
 
     # Viaplay: one product per broadcast; NHL games can also be on MTV Sub/Disney+.
     for e in viaplay_items:
@@ -104,8 +107,14 @@ def merge(viaplay_items, liiga_items, mtv_items, overrides,
 
     for item in mtv_items:
         start = parse_ts(item["start"])
-        b = {"service": item["channel"], "channel": item["channel"], "free": True,
+        free = item.get("free", True)
+        b = {"service": item["channel"], "channel": item["channel"], "free": free,
              "language": "fi", "url": mtv.GUIDE, "manual": False}
+        if RALLY.search(item["title"]):
+            merge_rally(events, item, b, report)
+            continue
+        if not free:
+            continue  # pay sports channels are only used for rally
         if re.search(r"\bNHL\b", item["title"], re.I):
             ev = find_match(events, "nhl", start, item["title"])
             if ev:
@@ -148,6 +157,28 @@ def merge(viaplay_items, liiga_items, mtv_items, overrides,
         else:
             events.append(to_event(o))
     return events, report
+
+
+def merge_rally(events: list[dict], item: dict, b: dict, report: dict) -> None:
+    """Attach an MTV rally programme to every WRC stage that starts during it.
+
+    A pay-channel programme adds nothing to stages already on MTV Katsomo+; it only
+    stands in for them if the WRC timetable is missing."""
+    p_start = parse_ts(item["start"])
+    p_end = parse_ts(item["end"]) if item.get("end") else p_start + timedelta(hours=2)
+    stages = [e for e in events if e["sport"] == "wrc"
+              and p_start - timedelta(minutes=10) <= parse_ts(e["start"]) < p_end]
+    if stages:
+        if b["free"]:
+            for ev in stages:
+                add_broadcast(ev, b)
+        return
+    if not b["free"]:
+        b = dict(b, service="MTV Katsomo+", channel=item["channel"])
+    title = re.sub(r"^\s*(MM-ralli|WRC|Ralli)\s*[:\-–]?\s*", "", item["title"], flags=re.I).strip() or item["title"]
+    events.append({"sport": "wrc", "series": "MM-ralli", "title": title, "session": "",
+                   "start": item["start"], "end": item.get("end"), "teams": None, "broadcasts": [b]})
+    report["wrc_mtv_unmatched"].append(item)
 
 
 def in_window(start: datetime, window, tz) -> bool:
@@ -212,7 +243,9 @@ def main(argv=None) -> int:
     liiga_items = run_source("liiga", lambda: liiga.fetch(first=now - timedelta(hours=3), last=last),
                              now, args.cached, status) if "liiga" in enabled else []
     mtv_items = run_source("mtv", lambda: mtv.fetch(first_date=local_today, days=days),
-                           now, args.cached, status) if enabled & {"liiga", "nhl"} else []
+                           now, args.cached, status) if enabled & {"liiga", "nhl", "wrc"} else []
+    wrc_items = run_source("wrc", lambda: wrc.fetch(first=local_today, last=local_today + timedelta(days=days)),
+                           now, args.cached, status) if "wrc" in enabled else []
     nfl_items = run_source("ruutu-nfl", lambda: ruutu.fetch(today=local_today),
                            now, args.cached, status) if "nfl" in enabled else []
     free_nfl = run_source("elisa", lambda: elisa.fetch(first_date=local_today, days=days),
@@ -221,7 +254,7 @@ def main(argv=None) -> int:
     overrides_path = ROOT / "data" / "overrides.json"
     overrides = [o for o in json.loads(overrides_path.read_text()) if not o.get("_example")] if overrides_path.exists() else []
 
-    events, report = merge(viaplay_items, liiga_items, mtv_items, overrides, nfl_items, free_nfl)
+    events, report = merge(viaplay_items, liiga_items, mtv_items, overrides, nfl_items, free_nfl, wrc_items)
     windows = {k: v.get("start_window") for k, v in cfg["sports"].items() if v.get("start_window")}
     events = finalize(events, now, last, windows, tz)
 

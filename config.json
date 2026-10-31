@@ -6,6 +6,7 @@
     "nhl":    { "name": "NHL",       "enabled": true },
     "nfl":    { "name": "NFL",       "enabled": true },
     "f1":     { "name": "Formula 1", "enabled": true },
+    "wrc":    { "name": "MM-ralli",  "enabled": true },
     "motogp": { "name": "MotoGP",    "enabled": true },
     "moto2":  { "name": "Moto2",     "enabled": true },
     "moto3":  { "name": "Moto3",     "enabled": true },

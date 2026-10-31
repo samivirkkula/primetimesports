@@ -7,7 +7,7 @@ from unittest import mock
 
 from zoneinfo import ZoneInfo
 
-from scraper import build, elisa, ics, liiga, mtv, ruutu, viaplay
+from scraper import build, elisa, ics, liiga, mtv, ruutu, viaplay, wrc
 
 HEL = ZoneInfo("Europe/Helsinki")
 
@@ -187,6 +187,55 @@ class WindowTests(unittest.TestCase):
             ("f1", "2026-11-01T19:00:00Z"), ("f1", "2026-11-02T01:00:00Z"), ("nhl", "2026-11-01T19:00:00Z")])
 
 
+class WrcTests(unittest.TestCase):
+    def setUp(self):
+        from datetime import date
+        self.d = date
+        self.stages = wrc.parse_itinerary(load("wrc_itinerary.json"), rally="Rally Saudi Arabia", event_id=1712)
+
+    def test_calendar_picks_rallies_in_window(self):
+        rallies = wrc.events_in_window(load("wrc_calendar.json"), self.d(2026, 10, 31), self.d(2026, 11, 14))
+        self.assertEqual(rallies, [{"id": 1712, "name": "Rally Saudi Arabia"}])
+
+    def test_calendar_structure_change_raises(self):
+        with self.assertRaises(ValueError):
+            wrc.events_in_window({"foo": []}, self.d(2026, 10, 31), self.d(2026, 11, 14))
+
+    def test_stages(self):
+        self.assertEqual([(s["session"], s["start"]) for s in self.stages], [
+            ("EK2 Al Faisaliyah 1 (19,5 km)", "2026-11-06T05:03:00Z"),
+            ("EK3 Jeddah Hills 1 (31,0 km)", "2026-11-06T13:15:00Z"),
+            ("EK4 Power Stage (10,1 km)", "2026-11-06T15:05:00Z")])
+        self.assertTrue(all(s["service"] == "MTV Katsomo+" and s["sport"] == "wrc" for s in self.stages))
+
+    def test_free_mtv_programme_joins_stages_pay_channel_does_not(self):
+        free = {"title": "MM-ralli: Saudi-Arabia, EK3", "start": "2026-11-06T13:10:00Z", "end": "2026-11-06T14:30:00Z",
+                "channel": "MTV3", "free": True}
+        pay = {"title": "MM-ralli", "start": "2026-11-06T05:00:00Z", "end": "2026-11-06T06:30:00Z",
+               "channel": "MTV Urheilu 1", "free": False}
+        events, report = build.merge([], [], [free, pay], [], wrc_items=self.stages)
+        by = {e["session"][:3]: {b["service"] for b in e["broadcasts"]} for e in events}
+        self.assertEqual(by["EK3"], {"MTV Katsomo+", "MTV3"})
+        self.assertEqual(by["EK2"], {"MTV Katsomo+"})
+        self.assertEqual(report["wrc_mtv_unmatched"], [])
+
+    def test_mtv_programme_stands_in_without_wrc_timetable(self):
+        free = {"title": "MM-ralli: Saudi-Arabia", "start": "2026-11-06T13:10:00Z", "end": "2026-11-06T14:30:00Z",
+                "channel": "MTV Sub", "free": True}
+        events, report = build.merge([], [], [free], [])
+        self.assertEqual([(e["sport"], e["title"], e["broadcasts"][0]["free"]) for e in events],
+                         [("wrc", "Saudi-Arabia", True)])
+
+    def test_pay_channel_liiga_is_ignored(self):
+        first = datetime(2026, 10, 30, tzinfo=timezone.utc)
+        games = liiga.parse(load("liiga.json"), first=first, last=datetime(2026, 11, 13, tzinfo=timezone.utc), tournament="runkosarja")
+        pay = {"title": "Liiga: JYP–TPS", "start": "2026-11-01T15:15:00Z", "end": "2026-11-01T18:00:00Z",
+               "channel": "MTV Urheilu 1", "free": False}
+        events, _ = build.merge([], games, [pay], [])
+        jyp = next(e for e in events if e["title"] == "JYP – TPS")
+        self.assertEqual([b["service"] for b in jyp["broadcasts"]], ["MTV Katsomo+"])
+
+
 class IcsTests(unittest.TestCase):
     EV = {"id": "abc123", "sport": "nhl", "series": "NHL", "title": "Detroit Red Wings – Winnipeg Jets",
           "session": "", "start": "2026-11-01T19:00:00Z", "end": "2026-11-01T22:00:00Z",
@@ -234,7 +283,11 @@ class BuildTests(unittest.TestCase):
                 return {"channels": [{"id": 77, "name": "Jim"}]}
             return load("elisa_jim.json")
 
+        def fake_wrc(url, **kw):
+            return load("wrc_calendar.json") if "calendar" in url else load("wrc_itinerary.json")
+
         with mock.patch.object(viaplay, "get_json", fake_get), mock.patch.object(liiga, "get_json", fake_get), \
+             mock.patch.object(wrc, "get_json", fake_wrc), \
              mock.patch.object(ruutu, "request", lambda url, **kw: (FIX / "ruutu_nfl.html").read_text()), \
              mock.patch.object(elisa, "get_json", fake_elisa), \
              mock.patch.object(mtv, "post_json", fake_post), \
@@ -246,7 +299,7 @@ class BuildTests(unittest.TestCase):
         for e in data["events"]:
             self.assertTrue((FIX.parent / ".tmp-site" / "ics" / f'{e["id"]}.ics').exists(), e["title"])
         sports = {e["sport"] for e in data["events"]}
-        self.assertEqual(sports, {"f1", "nhl", "liiga", "nfl"})
+        self.assertEqual(sports, {"f1", "nhl", "liiga", "nfl", "wrc"})
         # No build-time window by default: night games stay in the data; the app filters primetime.
         self.assertEqual(len([e for e in data["events"] if e["sport"] == "nfl"]), 4)
         self.assertIn("Edmonton Oilers – Dallas Stars", [e["title"] for e in data["events"]])

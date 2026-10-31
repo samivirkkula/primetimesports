@@ -1,0 +1,67 @@
+{
+ "itineraryLegs": [
+  {
+   "name": "Friday 6th November",
+   "legDate": "2026-11-06",
+   "itinerarySections": [
+    {
+     "name": "Section 2",
+     "controls": [
+      {
+       "type": "TimeControl",
+       "code": "TC1",
+       "stageId": null,
+       "firstCarDueDateTimeLocal": "2026-11-06T07:30:00+03:00"
+      },
+      {
+       "type": "StageStart",
+       "code": "SS2",
+       "stageId": 9002,
+       "firstCarDueDateTime": "2026-11-06T05:03:00",
+       "firstCarDueDateTimeLocal": "2026-11-06T08:03:00+03:00"
+      },
+      {
+       "type": "StageStart",
+       "code": "SS3",
+       "stageId": 9003,
+       "firstCarDueDateTime": "2026-11-06T13:15:00",
+       "firstCarDueDateTimeLocal": "2026-11-06T16:15:00+03:00"
+      },
+      {
+       "type": "StageStart",
+       "code": "SS4",
+       "stageId": 9004,
+       "firstCarDueDateTime": "2026-11-06T15:05:00"
+      }
+     ],
+     "stages": [
+      {
+       "stageId": 9002,
+       "code": "SS2",
+       "name": "Al Faisaliyah 1",
+       "distance": 19.47
+      },
+      {
+       "stageId": 9003,
+       "code": "SS3",
+       "name": "Jeddah Hills 1 (Live TV)",
+       "distance": 31.0
+      },
+      {
+       "stageId": 9004,
+       "code": "SS4",
+       "name": "Power Stage",
+       "distance": 10.12
+      },
+      {
+       "stageId": 9005,
+       "code": "SS5",
+       "name": "No time yet",
+       "distance": 8
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

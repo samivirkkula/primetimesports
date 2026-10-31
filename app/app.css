@@ -14,6 +14,7 @@
   --c-nhl: #7DB4FF;
   --c-nfl: #FF9F5A;
   --c-f1: #FF6B70;
+  --c-wrc: #4FD6C8;
   --c-motogp: #5FD992;
   --c-moto2: #B5E063;
   --c-moto3: #E3DC6B;
@@ -35,6 +36,7 @@
     --c-nhl: #1F5FBF;
     --c-nfl: #AE5509;
     --c-f1: #D21F2B;
+    --c-wrc: #0B7A70;
     --c-motogp: #1E7F45;
     --c-moto2: #577911;
     --c-moto3: #767000;
@@ -96,16 +98,37 @@ body {
 
 main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 
+.dayblock { border-bottom: 1px solid var(--rule); }
+.dayhead { position: sticky; top: 0; z-index: 2; margin: 0; background: var(--bg); }
 .day {
-  position: sticky; top: 0; z-index: 1;
-  margin: 0;
-  padding: 14px 16px 6px;
-  background: var(--bg);
-  color: var(--head);
+  display: flex; align-items: baseline; gap: 6px;
+  width: 100%; min-height: 48px;
+  padding: 14px 16px 10px;
+  border: 0; background: none; color: var(--head);
   font: 700 17px/1.2 var(--sans); font-stretch: 85%;
-  border-bottom: 1px solid var(--rule);
+  text-align: left; cursor: pointer;
 }
-.day small { color: var(--muted); font-weight: 500; margin-left: 6px; font-size: 14px; }
+.day small { color: var(--muted); font-weight: 500; font-size: 14px; }
+.dsum {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: auto;
+  color: var(--muted); font-weight: 500; font-size: 13px; font-stretch: 100%;
+}
+.dsum i { width: 7px; height: 7px; border-radius: 50%; background: var(--c); }
+.dsum i:last-of-type { margin-right: 4px; }
+.open .dsum { display: none; }
+.chev { width: 18px; height: 18px; align-self: center; margin-left: 2px; color: var(--muted); transition: transform .25s ease; }
+.open .chev { transform: rotate(180deg); margin-left: auto; }
+.day:focus-visible { outline: 2px solid var(--head); outline-offset: -2px; }
+.open .dayhead { border-bottom: 1px solid var(--rule); }
+.daybody { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s ease; }
+.open .daybody { grid-template-rows: 1fr; }
+.dayinner { overflow: hidden; min-height: 0; }
+.dayinner .ev:last-child { border-bottom: 0; }
+#list.has-closed { padding-bottom: 80vh; }
+@media (prefers-reduced-motion: reduce) {
+  .daybody, .chev { transition: none; }
+}
 
 .ev {
   position: relative;

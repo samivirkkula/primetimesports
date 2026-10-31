@@ -1,0 +1,58 @@
+{
+ "rallyEvents": {
+  "items": [
+   {
+    "id": 1700,
+    "name": "WRC Rally Chile Bio B\u00edo",
+    "deleted": false,
+    "eventDays": [
+     {
+      "eventDay": "2026-09-11"
+     },
+     {
+      "eventDay": "2026-09-13"
+     }
+    ]
+   },
+   {
+    "id": 1712,
+    "name": "WRC Rally Saudi Arabia",
+    "deleted": false,
+    "eventDays": [
+     {
+      "eventDay": "2026-11-05T00:00:00"
+     },
+     {
+      "eventDay": "2026-11-06"
+     },
+     {
+      "eventDay": "2026-11-07"
+     },
+     {
+      "eventDay": "2026-11-08"
+     }
+    ]
+   },
+   {
+    "id": 1713,
+    "name": "WRC Rally Japan",
+    "deleted": true,
+    "eventDays": [
+     {
+      "eventDay": "2026-11-06"
+     }
+    ]
+   },
+   {
+    "id": 1720,
+    "name": "WRC Rallye Monte-Carlo",
+    "deleted": false,
+    "eventDays": [
+     {
+      "eventDay": "2027-01-21"
+     }
+    ]
+   }
+  ]
+ }
+}
