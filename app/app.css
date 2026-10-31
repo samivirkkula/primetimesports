@@ -92,9 +92,20 @@ body {
 .chip[aria-pressed="true"] { color: var(--ink); border-color: var(--c); }
 .chip[aria-pressed="true"]::before { opacity: 1; }
 
-.toggles { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 2px 16px 6px; }
+.toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 16px 6px; }
 .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 32px; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--free); margin: 0; }
+.collapse-all {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 0 12px;
+  border: 1.5px solid var(--rule); border-radius: 16px;
+  background: transparent; color: var(--muted);
+  font: 600 14px/1 var(--sans); font-stretch: 85%;
+  cursor: pointer;
+}
+.collapse-all:active { background: var(--bg-deep); color: var(--ink); }
+.collapse-all:focus-visible { outline: 2px solid var(--head); outline-offset: 2px; }
 
 main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 

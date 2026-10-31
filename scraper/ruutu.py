@@ -1,8 +1,10 @@
 """Ruutu's NFL page (https://www.ruutu.fi/ohjelmat/nfl): upcoming live game streams on Ruutu+ Urheilu.
 
 The page lists each live stream as a link to /stream/<id> with a title, a time element
-("<strong>20:00</strong>1.11.") and an image whose alt text tells the commentary
-language ("Selostus suomi"). RedZone and recordings are skipped.
+("<strong>20:00</strong>1.11.", or a relative day such as "Huomenna" / "Tänään" / "su")
+and an image whose alt text tells the commentary language ("Selostus suomi").
+RedZone and recordings are skipped. Cards whose day cannot be read are collected in
+SKIPPED so the build log shows them.
 
 Each card is cut out of the HTML as the text between <a href="/stream/..."> and its </a>,
 so the parser does not depend on how the page nests or self-closes its tags.
@@ -23,8 +25,13 @@ GAME = re.compile(r".+\s(?:-|–|—|vs\.?|@)\s.+", re.I)
 _CARD = re.compile(r'<a\b[^>]*\bhref="(/stream/[^"]+)"[^>]*>(.*?)</a>', re.S | re.I)
 _TITLE = re.compile(r'<[a-z0-9]+\b[^>]*class="[^"]*titleText[^"]*"[^>]*>(.*?)</[a-z0-9]+>', re.S | re.I)
 _TIME = re.compile(r'<[a-z0-9]+\b[^>]*class="[^"]*__time[^"]*"[^>]*>(.*?)</(?:span|div|p|time)>', re.S | re.I)
-_CLOCK = re.compile(r"(\d{1,2})[:.](\d{2})(?!\d)")
+# A clock is HH:MM / HH.MM that is not part of a date like "1.11." (no dot or digit after).
+_CLOCK = re.compile(r"(?<![\d.:])([01]?\d|2[0-3])[:.]([0-5]\d)(?![\d.])")
 _DAY = re.compile(r"(?<![\d:.])(\d{1,2})\.(\d{1,2})\.")
+_RELATIVE = {"tänään": 0, "nyt": 0, "huomenna": 1, "ylihuomenna": 2}
+_WEEKDAYS = {"ma": 0, "maanantai": 0, "ti": 1, "tiistai": 1, "ke": 2, "keskiviikko": 2, "to": 3, "torstai": 3,
+             "pe": 4, "perjantai": 4, "la": 5, "lauantai": 5, "su": 6, "sunnuntai": 6}
+SKIPPED: list[dict] = []
 _ALT = re.compile(r'\balt="([^"]*)"', re.I)
 _TAG = re.compile(r"<[^>]+>")
 _COMMENT = re.compile(r"<!--.*?-->", re.S)
@@ -43,6 +50,19 @@ def _event_date(day: int, month: int, today: date) -> date | None:
             continue
         if today - timedelta(days=1) <= d <= today + timedelta(days=40):
             return d
+    return None
+
+
+def resolve_day(text: str, today: date) -> date | None:
+    """Date from '1.11.', 'su 1.11.', 'Huomenna', 'Tänään' or a weekday name."""
+    m = _DAY.search(text)
+    if m:
+        return _event_date(int(m.group(1)), int(m.group(2)), today)
+    for word in re.findall(r"[a-zåäö]+", text.lower()):
+        if word in _RELATIVE:
+            return today + timedelta(days=_RELATIVE[word])
+        if word in _WEEKDAYS:
+            return today + timedelta(days=(_WEEKDAYS[word] - today.weekday()) % 7)
     return None
 
 
@@ -69,17 +89,22 @@ def parse(html: str, *, today: date) -> list[dict]:
     if "NFL" not in head:
         raise ValueError("Ruudun NFL-sivun rakenne muuttui (NFL-otsikko puuttuu)")
     cards = parse_cards(html)
+    SKIPPED.clear()
     events = []
     for c in cards:
         title = c["title"]
-        clock = _CLOCK.search(c["clock"])
-        day = _DAY.search(c["time"].replace(c["clock"], " ")) or _DAY.search(c["time"])
-        if not title or not clock or not day:
+        if not title or "redzone" in title.lower() or not GAME.match(title):
             continue
-        if "redzone" in title.lower() or not GAME.match(title):
-            continue
-        d = _event_date(int(day.group(1)), int(day.group(2)), today)
-        if not d:
+        clock = _CLOCK.search(c["clock"]) or _CLOCK.search(c["time"])
+        # Look for the day outside the title and the clock, so "LA Rams" is not Saturday.
+        rest = c["time"].replace(title, " ")
+        if clock:
+            rest = rest.replace(clock.group(0), " ")
+        d = resolve_day(rest, today)
+        if clock and not d and _DAY.search(rest):
+            continue  # a dated card outside the window (e.g. an old recording)
+        if not clock or not d:
+            SKIPPED.append({"title": title, "time": c["time"][:80], "href": c["href"]})
             continue
         local = datetime(d.year, d.month, d.day, int(clock.group(1)), int(clock.group(2)), tzinfo=TZ)
         start = local.astimezone(timezone.utc)

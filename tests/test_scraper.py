@@ -131,6 +131,31 @@ class NflTests(unittest.TestCase):
             ("Kansas City Chiefs – Buffalo Bills", "2026-11-01T18:00:00Z", "fi"),
             ("New England Patriots & Co – New York Jets", "2026-11-01T21:25:00Z", "fi")])
 
+    def test_ruutu_relative_days(self):
+        from datetime import date
+        games = ruutu.parse((FIX / "ruutu_nfl_relative.html").read_text(), today=date(2026, 10, 31))  # Saturday
+        self.assertEqual([(g["title"], g["start"]) for g in games], [
+            ("Detroit Lions – Minnesota Vikings", "2026-11-01T18:00:00Z"),
+            ("Denver Broncos – Kansas City Chiefs", "2026-11-01T21:25:00Z"),
+            ("Washington Commanders – Philadelphia Eagles", "2026-11-02T01:20:00Z"),
+            ("LA Rams – Los Angeles Chargers", "2026-10-31T17:00:00Z"),
+            ("Seattle Seahawks – Chicago Bears", "2026-11-03T01:15:00Z")])
+        self.assertEqual([c["title"] for c in ruutu.SKIPPED], ["Mystery Team - Other Team"])
+
+    def test_ruutu_real_page_snapshot(self):
+        # Snapshot of ruutu.fi/ohjelmat/nfl on Sat 31.10.2026: next-day games say "Huomenna".
+        from datetime import date
+        games = ruutu.parse((FIX / "ruutu_nfl_real_2026-10-31.html").read_text(), today=date(2026, 10, 31))
+        self.assertEqual([(g["title"], g["start"], g["language"]) for g in games], [
+            ("Detroit Lions – Minnesota Vikings", "2026-11-01T18:00:00Z", "fi"),
+            ("Denver Broncos – Kansas City Chiefs", "2026-11-01T21:25:00Z", "fi"),
+            ("Washington Commanders – Philadelphia Eagles", "2026-11-02T01:20:00Z", "en")])
+        self.assertEqual(ruutu.SKIPPED, [])
+
+    def test_clock_is_not_a_date(self):
+        self.assertIsNone(ruutu._CLOCK.search("su 1.11."))
+        self.assertEqual(ruutu._CLOCK.search("su 1.11. 20.00").groups(), ("20", "00"))
+
     def test_ruutu_only_redzone_is_not_an_error(self):
         from datetime import date
         html = (FIX / "ruutu_nfl_react.html").read_text()
@@ -207,6 +232,16 @@ class WrcTests(unittest.TestCase):
             ("EK3 Jeddah Hills 1 (31,0 km)", "2026-11-06T13:15:00Z"),
             ("EK4 Power Stage (10,1 km)", "2026-11-06T15:05:00Z")])
         self.assertTrue(all(s["service"] == "MTV Katsomo+" and s["sport"] == "wrc" for s in self.stages))
+
+    def test_sub_nhl_joins_viaplay_broadcast_that_starts_with_studio(self):
+        vp = [{"sport": "nhl", "series": "NHL", "title": "Carolina - Winnipeg", "session": "Runkosarja | Studio",
+               "start": "2026-11-01T17:25:00Z", "end": "2026-11-01T22:00:00Z", "service": "Viaplay",
+               "channel": None, "free": False, "language": "fi", "url": "https://viaplay.fi/x"}]
+        sub = {"title": "NHL: Carolina Hurricanes - Winnipeg Jets", "start": "2026-11-01T18:00:00Z",
+               "end": "2026-11-01T20:50:00Z", "channel": "MTV Sub", "free": True}
+        events, _ = build.merge(vp, [], [sub], [])
+        self.assertEqual(len(events), 1)
+        self.assertEqual({b["service"] for b in events[0]["broadcasts"]}, {"Viaplay", "MTV Sub"})
 
     def test_free_mtv_programme_joins_stages_pay_channel_does_not(self):
         free = {"title": "MM-ralli: Saudi-Arabia, EK3", "start": "2026-11-06T13:10:00Z", "end": "2026-11-06T14:30:00Z",

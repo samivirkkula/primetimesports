@@ -18,7 +18,7 @@ const fmtStamp = new Intl.DateTimeFormat("fi-FI", { timeZone: TZ, weekday: "shor
 
 let data = null;
 let fetchedAt = 0;
-let state = { hidden: [], freeOnly: false, primeOnly: true };
+let state = { hidden: [], primeOnly: true };
 
 // Primetime: broadcasts starting 15.00–23.00 Finnish time (both ends inclusive).
 const PRIME_FROM = "15:00", PRIME_TO = "23:00";
@@ -47,10 +47,7 @@ function dayLabel(key, todayKey, tomorrowKey, sample) {
 }
 
 function visibleBroadcasts(ev) {
-  return ev.broadcasts.filter((b) => {
-    if (state.freeOnly && !b.free) return false;
-    return true;
-  });
+  return ev.broadcasts || [];
 }
 
 function renderChips() {
@@ -77,7 +74,9 @@ function renderChips() {
 // the next day when its header reaches the lower part of the screen; scrolling back up
 // closes those auto-opened days again. A tap opens or closes a day for good.
 // State lives in memory so the minute refresh keeps it.
-const dayState = new Map(); // dayKey -> "auto" (opened by scrolling) | "open" | "closed" (by the user)
+// dayKey -> "auto" (opened by scrolling) | "stack" (closed, scrolling may open it)
+//         | "open" | "closed" (set by the user; scrolling leaves these alone)
+const dayState = new Map();
 const OPEN_LINE = 0.8, CLOSE_LINE = 0.86; // fractions of the viewport height; the gap prevents flicker
 
 function dayBlock(day, open) {
@@ -134,8 +133,13 @@ function setDay(sec, open, how) {
   const key = sec.dataset.key;
   if (how === "user") dayState.set(key, open ? "open" : "closed");
   else if (open) dayState.set(key, "auto");
-  else dayState.delete(key); // closed by scrolling: may open again on the way down
+  else dayState.set(key, "stack"); // closed by scrolling or "collapse all": may open again on the way down
   updateClosedPadding();
+}
+
+function collapseAll() {
+  for (const sec of document.querySelectorAll(".dayblock")) setDay(sec, false, "auto");
+  lastScrollY = window.scrollY;
 }
 
 function updateClosedPadding() {
@@ -244,7 +248,7 @@ function renderList() {
   const defaultOpen = days.some((d) => d.key === todayKey) ? todayKey : days[0].key;
   for (const day of days) {
     const saved = dayState.get(day.key);
-    const open = saved ? saved !== "closed" : day.key === defaultOpen;
+    const open = saved ? saved === "open" || saved === "auto" : day.key === defaultOpen;
     list.append(dayBlock(day, open));
   }
   updateClosedPadding();
@@ -318,7 +322,8 @@ window.addEventListener("error", (e) => {
 
 loadState();
 bindToggle("primeOnly", "primeOnly");
-bindToggle("freeOnly", "freeOnly");
+const collapseBtn = $("collapseAll");
+if (collapseBtn) collapseBtn.addEventListener("click", collapseAll);
 
 load();
 window.addEventListener("scroll", onScroll, { passive: true });

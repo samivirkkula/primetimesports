@@ -50,7 +50,7 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 
 ## Day list
 
-Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen, and scrolling back up closes those days again, so the top of the list returns to the starting view. Tapping a header opens or closes a day for good: scrolling does not change a day the user has tapped. The state lives in memory, so the minute refresh keeps it.
+Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen, and scrolling back up closes those days again, so the top of the list returns to the starting view. Tapping a header opens or closes a day for good: scrolling does not change a day the user has tapped. The "Pienennä kaikki päivät" button closes every day, today included; scrolling then opens them again as usual. The state lives in memory, so the minute refresh keeps it.
 
 ## Primetime
 
@@ -74,7 +74,7 @@ The last successful result of each source is cached in `.cache/` (kept between w
 - **Commentary language** is not used for filtering; the app shows every broadcast. Viaplay's language guess (`scraper/viaplay.py: explain_language`) is kept only for matching and diagnostics.
 - **Disney+** has no public schedule; add confirmed games to `data/overrides.json` (remove `"_example": true`).
 - **Viaplay API field names** are taken from public clients of the same API and are verified only against fixtures; the first live run is the real test.
-- **Ruutu's NFL page** is parsed from HTML (link, title, time and commentary-language image). A site redesign breaks it; the cached result is used for 48 h and the app footer shows the failure.
+- **Ruutu's NFL page** is parsed from HTML (link, title, time and commentary-language image). Upcoming days are written as "Tänään", "Huomenna", a weekday or a date ("2.11."); all are understood. Cards whose day cannot be read are listed in the build log. A site redesign breaks it; the cached result is used for 48 h and the app footer shows the failure.
 - A free-to-air NFL broadcast whose guide title does not name the teams joins the single Finnish-commentary Ruutu game starting within 20 minutes; otherwise it is left out (see `.cache/match-report.json`).
 - **WRC API** field names come from public documentation of the same API (rallydatajunkie.com) and are verified only against fixtures. If it fails, MTV's rally programmes still appear as rows on their own.
 - Darts' Viaplay path is discovered automatically; if discovery fails, set `viaplay.darts.path` in `config.json`.

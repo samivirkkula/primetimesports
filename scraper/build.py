@@ -116,7 +116,8 @@ def merge(viaplay_items, liiga_items, mtv_items, overrides,
         if not free:
             continue  # pay sports channels are only used for rally
         if re.search(r"\bNHL\b", item["title"], re.I):
-            ev = find_match(events, "nhl", start, item["title"])
+            # Viaplay's broadcast starts with a studio up to an hour before the puck drop.
+            ev = find_match(events, "nhl", start, item["title"], after=timedelta(minutes=60))
             if ev:
                 add_broadcast(ev, b)
             else:
@@ -288,6 +289,10 @@ def main(argv=None) -> int:
     print(f"{len(events)} tapahtumaa -> {OUT / 'schedule.json'}, {n_ics} kalenteritiedostoa -> {OUT / 'ics'}")
     for name, st in status.items():
         print(f"  {name}: {st}")
+    if ruutu.SKIPPED:
+        print("Ruudun NFL-kortit, joiden aikaa ei voitu lukea:")
+        for c in ruutu.SKIPPED:
+            print(f"  {c['title']} | {c['time']} | {c['href']}")
     if samples:
         print("NHL-selostuskielen esimerkit (kieli/sääntö | ottelu | kuvaus):")
         for key, rows in samples.items():

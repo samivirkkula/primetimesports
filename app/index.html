@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/archivo.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="app.css?v=9">
+<link rel="stylesheet" href="app.css?v=10">
 </head>
 <body>
 <header class="top">
@@ -26,7 +26,10 @@
   <div class="chips" id="chips" role="group" aria-label="Näytettävät lajit"></div>
   <div class="toggles">
     <label class="toggle"><input type="checkbox" id="primeOnly" checked> Näytä vain primetime (klo 15–23 alkavat)</label>
-    <label class="toggle"><input type="checkbox" id="freeOnly"> Vain ilmaiskanavat</label>
+    <button type="button" class="collapse-all" id="collapseAll">
+      <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11l5-5 5 5M7 18l5-5 5 5"/></svg>
+      Pienennä kaikki päivät
+    </button>
   </div>
 </nav>
 
@@ -50,6 +53,6 @@
   </div>
 </template>
 
-<script src="app.js?v=9" defer></script>
+<script src="app.js?v=10" defer></script>
 </body>
 </html>
