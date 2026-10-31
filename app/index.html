@@ -14,7 +14,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/archivo.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="app.css?v=10">
+<link rel="stylesheet" href="app.css?v=11">
 </head>
 <body>
 <header class="top">
@@ -26,6 +26,10 @@
   <div class="chips" id="chips" role="group" aria-label="Näytettävät lajit"></div>
   <div class="toggles">
     <label class="toggle"><input type="checkbox" id="primeOnly" checked> Näytä vain primetime (klo 15–23 alkavat)</label>
+    <div class="follow-row">
+      <label class="toggle"><input type="checkbox" id="followOnly"> Näytä vain seurattavat joukkueet</label>
+      <button type="button" class="pick-teams" id="pickTeams">Valitse joukkueet</button>
+    </div>
     <button type="button" class="collapse-all" id="collapseAll">
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11l5-5 5 5M7 18l5-5 5 5"/></svg>
       Pienennä kaikki päivät
@@ -36,6 +40,17 @@
 <main id="list" aria-live="polite"></main>
 
 <footer class="foot" id="foot"></footer>
+
+<dialog class="teams" id="teamsDialog" aria-labelledby="teamsTitle">
+  <form method="dialog">
+    <header class="teams-head">
+      <h2 id="teamsTitle">Seurattavat joukkueet</h2>
+      <button class="done" value="done">Valmis</button>
+    </header>
+    <p class="teams-hint">Valitse Liigasta ja NHL:stä joukkueet, joiden ottelut haluat nähdä, kun "Näytä vain seurattavat joukkueet" on päällä. Valinnat tallentuvat tähän puhelimeen.</p>
+    <div id="teamsBody"></div>
+  </form>
+</dialog>
 
 <template id="row">
   <div class="ev">
@@ -53,6 +68,6 @@
   </div>
 </template>
 
-<script src="app.js?v=10" defer></script>
+<script src="app.js?v=11" defer></script>
 </body>
 </html>

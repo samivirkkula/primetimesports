@@ -95,6 +95,41 @@ body {
 .toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 16px 6px; }
 .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 32px; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--free); margin: 0; }
+.follow-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
+.pick-teams {
+  border: 0; background: none; padding: 6px 2px; min-height: 32px;
+  color: var(--c-nhl); font: 600 14px/1 var(--sans); cursor: pointer;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.pick-teams:focus-visible { outline: 2px solid var(--head); outline-offset: 2px; border-radius: 4px; }
+.ev.fav .title::before { content: "★ "; color: var(--c); }
+
+.teams {
+  width: min(560px, 100vw); max-width: 100vw; max-height: 88vh;
+  margin: auto auto 0; padding: 0;
+  border: 0; border-radius: 16px 16px 0 0;
+  background: var(--bg); color: var(--ink);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, .25);
+}
+.teams::backdrop { background: rgba(8, 14, 20, .45); }
+.teams form { display: flex; flex-direction: column; max-height: 88vh; }
+.teams-head {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 10px; background: var(--bg); border-bottom: 1px solid var(--rule);
+}
+.teams-head h2 { margin: 0; font: 700 19px/1.2 var(--sans); font-stretch: 85%; color: var(--head); }
+.teams .done {
+  min-height: 36px; padding: 0 16px; border-radius: 18px; border: 0;
+  background: var(--head); color: var(--bg); font: 600 15px/1 var(--sans); cursor: pointer;
+}
+.teams .done:focus-visible { outline: 2px solid var(--c-nhl); outline-offset: 2px; }
+.teams-hint { margin: 10px 16px 0; color: var(--muted); font-size: 14px; }
+#teamsBody { overflow-y: auto; padding: 0 16px calc(20px + env(safe-area-inset-bottom)); }
+#teamsBody h3 { margin: 18px 0 8px; font: 700 15px/1.2 var(--sans); color: var(--muted); }
+.team-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip.team { min-height: 34px; font-size: 14px; }
+
 .collapse-all {
   margin-left: auto;
   display: inline-flex; align-items: center; gap: 6px;

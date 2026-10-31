@@ -18,7 +18,11 @@ const fmtStamp = new Intl.DateTimeFormat("fi-FI", { timeZone: TZ, weekday: "shor
 
 let data = null;
 let fetchedAt = 0;
-let state = { hidden: [], primeOnly: true };
+let state = { hidden: [], primeOnly: true, followOnly: false, favorites: { liiga: [], nhl: [] } };
+const FOLLOW_SPORTS = ["liiga", "nhl"];
+
+const favs = (sport) => (state.favorites && state.favorites[sport]) || [];
+const isFavorite = (ev) => FOLLOW_SPORTS.includes(ev.sport) && (ev.teams || []).some((t) => favs(ev.sport).includes(t));
 
 // Primetime: broadcasts starting 15.00–23.00 Finnish time (both ends inclusive).
 const PRIME_FROM = "15:00", PRIME_TO = "23:00";
@@ -195,6 +199,8 @@ function renderList() {
     const start = Date.parse(ev.start), end = Date.parse(ev.end);
     if (end <= now) continue;
     if (state.primeOnly && !isPrimetime(start)) continue;
+    // Followed teams: Liiga and NHL show only games of followed teams; other sports are unaffected.
+    if (state.followOnly && FOLLOW_SPORTS.includes(ev.sport) && !isFavorite(ev)) continue;
     const bcs = visibleBroadcasts(ev);
     if (!bcs.length) continue;
 
@@ -220,6 +226,7 @@ function renderList() {
     t.textContent = time(ev.start);
     t.dateTime = ev.start;
     row.querySelector(".series").textContent = ev.series || data.sports[ev.sport] || "";
+    if (isFavorite(ev)) row.classList.add("fav");
     row.querySelector(".title").textContent = ev.title;
     row.querySelector(".session").textContent = ev.session || "";
     const where = row.querySelector(".where");
@@ -240,7 +247,9 @@ function renderList() {
     p.className = "empty";
     p.textContent = state.hidden.length === Object.keys(data.sports).length
       ? "Valitse ylhäältä ainakin yksi laji."
-      : "Seuraavan kahden viikon aikana ei ole lähetyksiä näillä valinnoilla.";
+      : state.followOnly && !FOLLOW_SPORTS.some((s) => favs(s).length)
+        ? "Et ole vielä valinnut seurattavia joukkueita. Valitse ne Valitse joukkueet -napista."
+        : "Seuraavan kahden viikon aikana ei ole lähetyksiä näillä valinnoilla.";
     list.append(p);
     updateClosedPadding();
     return;
@@ -268,10 +277,63 @@ function renderFoot() {
   add("Lähetystiedot: Viaplay, Liiga, MTV, Ruutu, Elisa Viihde ja WRC. Kaikki ajat Suomen aikaa.");
 }
 
+const LEAGUE_NAMES = { liiga: "Liiga", nhl: "NHL" };
+
+function renderTeams() {
+  const body = $("teamsBody");
+  if (!body || !data) return;
+  body.textContent = "";
+  const lists = data.teams || {};
+  for (const sport of FOLLOW_SPORTS) {
+    const teams = lists[sport];
+    if (!teams || !teams.length) continue;
+    const h = document.createElement("h3");
+    h.textContent = LEAGUE_NAMES[sport];
+    const wrap = document.createElement("div");
+    wrap.className = "team-grid";
+    wrap.setAttribute("role", "group");
+    wrap.setAttribute("aria-label", `${LEAGUE_NAMES[sport]}: seurattavat joukkueet`);
+    for (const t of teams) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "chip team";
+      b.textContent = t.name;
+      b.style.setProperty("--c", `var(--c-${sport})`);
+      b.setAttribute("aria-pressed", String(favs(sport).includes(t.id)));
+      b.addEventListener("click", () => {
+        const cur = favs(sport);
+        const next = cur.includes(t.id) ? cur.filter((x) => x !== t.id) : [...cur, t.id];
+        state.favorites = { ...(state.favorites || {}), [sport]: next };
+        saveState();
+        b.setAttribute("aria-pressed", String(next.includes(t.id)));
+        updatePickLabel();
+      });
+      wrap.append(b);
+    }
+    body.append(h, wrap);
+  }
+}
+
+function updatePickLabel() {
+  const btn = $("pickTeams");
+  if (!btn) return;
+  const n = FOLLOW_SPORTS.reduce((sum, s) => sum + favs(s).length, 0);
+  btn.textContent = n ? `Valitse joukkueet (${n})` : "Valitse joukkueet";
+}
+
+function openTeams() {
+  const dlg = $("teamsDialog");
+  if (!dlg || !data) return;
+  renderTeams();
+  if (typeof dlg.showModal === "function") dlg.showModal();
+  else dlg.setAttribute("open", "");
+}
+
 function render() {
   if (!data) return;
   $("updated").textContent = "Päivitetty\n" + fmtStamp.format(new Date(data.generated));
   renderChips();
+  updatePickLabel();
   renderList();
   renderFoot();
 }
@@ -322,6 +384,9 @@ window.addEventListener("error", (e) => {
 
 loadState();
 bindToggle("primeOnly", "primeOnly");
+bindToggle("followOnly", "followOnly");
+if ($("pickTeams")) $("pickTeams").addEventListener("click", openTeams);
+if ($("teamsDialog")) $("teamsDialog").addEventListener("close", () => { if (data) renderList(); });
 const collapseBtn = $("collapseAll");
 if (collapseBtn) collapseBtn.addEventListener("click", collapseAll);
 

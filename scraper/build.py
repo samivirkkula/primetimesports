@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import elisa, ics, liiga, mtv, ruutu, viaplay, wrc
+from . import elisa, ics, liiga, mtv, ruutu, teams, viaplay, wrc
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / ".cache"
@@ -203,7 +203,11 @@ def finalize(events: list[dict], now: datetime, last: datetime,
             continue
         ev["end"] = end.isoformat().replace("+00:00", "Z")
         ev["id"] = hashlib.sha1(f'{ev["sport"]}|{ev["title"]}|{ev["session"]}|{ev["start"]}'.encode()).hexdigest()[:12]
-        ev.pop("teams", None)
+        # Teams are kept for Liiga and NHL so the app can filter followed teams.
+        if ev["sport"] == "nhl":
+            ev["teams"] = ev.get("teams") or teams.nhl_teams(ev["title"])
+        if ev["sport"] not in ("liiga", "nhl") or not ev.get("teams"):
+            ev.pop("teams", None)
         out.append(ev)
     # de-duplicate identical products that appear on several Viaplay pages
     uniq = {}
@@ -214,6 +218,17 @@ def finalize(events: list[dict], now: datetime, last: datetime,
         else:
             uniq[ev["id"]] = ev
     return sorted(uniq.values(), key=lambda e: (e["start"], e["sport"], e["title"]))
+
+
+def team_lists(events: list[dict], enabled: set[str]) -> dict:
+    """Teams the user can follow: every Liiga team in the season schedule, all 32 NHL teams."""
+    out = {}
+    if "liiga" in enabled:
+        names = set(liiga.TEAMS) | {t for e in events if e["sport"] == "liiga" for t in e.get("teams") or []}
+        out["liiga"] = [{"id": n, "name": n} for n in sorted(names, key=lambda n: n.lower().replace("ä", "z{").replace("ö", "z|"))]
+    if "nhl" in enabled:
+        out["nhl"] = teams.nhl_list()
+    return out
 
 
 # ---------------------------------------------------------------- main
@@ -278,6 +293,7 @@ def main(argv=None) -> int:
         "generated": now.isoformat().replace("+00:00", "Z"),
         "timezone": cfg["timezone"],
         "sports": {k: v["name"] for k, v in cfg["sports"].items() if k in enabled},
+        "teams": team_lists(events, enabled),
         "events": events,
         "status": status,
     }

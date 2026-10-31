@@ -7,6 +7,7 @@ from .http import get_json
 
 API = "https://liiga.fi/api/v2/schedule?tournament={tournament}&week=1&season={season}"
 KATSOMO = "https://www.mtv.fi/urheilu/jaakiekko/liiga"
+TEAMS: set[str] = set()  # every team seen in the fetched season schedules
 
 
 def season_for(d: date) -> int:
@@ -20,6 +21,7 @@ def parse(raw: list, *, first: datetime, last: datetime, tournament: str) -> lis
     events = []
     for g in raw:
         start_s, home, away = g.get("start"), g.get("homeTeamName"), g.get("awayTeamName")
+        TEAMS.update(t for t in (home, away) if t)
         if not start_s or not home or not away:
             continue  # unresolved playoff pairs
         start = datetime.fromisoformat(start_s.replace("Z", "+00:00")).astimezone(timezone.utc)

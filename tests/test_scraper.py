@@ -7,7 +7,7 @@ from unittest import mock
 
 from zoneinfo import ZoneInfo
 
-from scraper import build, elisa, ics, liiga, mtv, ruutu, viaplay, wrc
+from scraper import build, elisa, ics, liiga, mtv, ruutu, teams, viaplay, wrc
 
 HEL = ZoneInfo("Europe/Helsinki")
 
@@ -269,6 +269,34 @@ class WrcTests(unittest.TestCase):
         events, _ = build.merge([], games, [pay], [])
         jyp = next(e for e in events if e["title"] == "JYP – TPS")
         self.assertEqual([b["service"] for b in jyp["broadcasts"]], ["MTV Katsomo+"])
+
+
+class TeamTests(unittest.TestCase):
+    def test_nhl_titles_from_all_sources(self):
+        cases = {"Detroit - St. Louis": ["DET", "STL"], "NY Rangers - Edmonton": ["NYR", "EDM"],
+                 "NHL: Carolina Hurricanes - Winnipeg Jets": ["CAR", "WPG"], "Tampa Bay - Chicago": ["TBL", "CHI"],
+                 "Los Angeles - San Jose": ["LAK", "SJS"], "Montreal - Utah": ["MTL", "UTA"],
+                 "NHL-tuplastudio": None, "NHL On The Fly": None}
+        for title, want in cases.items():
+            self.assertEqual(teams.nhl_teams(title), want, title)
+        self.assertEqual(len(teams.nhl_list()), 32)
+
+    def test_events_carry_teams_for_liiga_and_nhl_only(self):
+        now = datetime(2026, 10, 30, 12, tzinfo=timezone.utc)
+        last = datetime(2026, 11, 13, tzinfo=timezone.utc)
+        games = liiga.parse(load("liiga.json"), first=now, last=last, tournament="runkosarja")
+        vp = viaplay.parse_day(load("viaplay_nhl.json"), sport="nhl", fmt="NHL", extra_feeds=set())
+        f1 = viaplay.parse_day(load("viaplay_f1.json"), sport="f1", fmt="Formula 1", extra_feeds={"Track Positioning"})
+        events, _ = build.merge(vp + f1, games, [], [])
+        out = build.finalize(events, now, last)
+        by = {e["title"]: e.get("teams") for e in out}
+        self.assertEqual(by["Tappara – Ilves"], ["Tappara", "Ilves"])
+        self.assertEqual(by["Detroit Red Wings – Winnipeg Jets"], ["DET", "WPG"])
+        self.assertIsNone(by["Meksikon Grand Prix"])
+        lists = build.team_lists(out, {"liiga", "nhl"})
+        self.assertIn({"id": "Tappara", "name": "Tappara"}, lists["liiga"])
+        self.assertIn({"id": "Lukko", "name": "Lukko"}, lists["liiga"], "kauden kaikki joukkueet, ei vain ikkunan")
+        self.assertEqual(len(lists["nhl"]), 32)
 
 
 class IcsTests(unittest.TestCase):

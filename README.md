@@ -24,7 +24,7 @@ The app is a static PWA. A GitHub Actions workflow fetches the sources once a da
 app/                  PWA: index.html, app.css, app.js, sw.js, manifest, icons, fonts
 scraper/              Python 3.12, standard library only
   build.py            fetch → merge → site/schedule.json
-  viaplay.py liiga.py mtv.py ruutu.py elisa.py wrc.py ics.py   one module per source
+  viaplay.py liiga.py mtv.py ruutu.py elisa.py wrc.py ics.py teams.py   one module per source
 config.json           sports, Viaplay paths, schedule length (14 days)
 data/overrides.json   manual broadcasts (Disney+ etc.)
 tests/                offline tests with fixtures
@@ -51,6 +51,12 @@ cp -r app/. site/ && python3 -m http.server -d site 8000
 ## Day list
 
 Days are shown as a stack: today is open, the other days are closed headers with the number of broadcasts and a dot per sport. Scrolling down opens the next closed day when its header reaches the lower part of the screen, and scrolling back up closes those days again, so the top of the list returns to the starting view. Tapping a header opens or closes a day for good: scrolling does not change a day the user has tapped. The "Pienennä kaikki päivät" button closes every day, today included; scrolling then opens them again as usual. The state lives in memory, so the minute refresh keeps it.
+
+## Followed teams
+
+"Valitse joukkueet" opens a sheet with every Liiga team in the season schedule and all 32 NHL teams; the choices are stored on the phone. With "Näytä vain seurattavat joukkueet" on, Liiga and NHL show only games of followed teams (a league with no followed team shows nothing); other sports are unaffected. With it off, followed teams' games get a star.
+
+The build adds `teams` to every Liiga and NHL game (`scraper/teams.py` maps NHL titles such as "Detroit - St. Louis" or "NHL: Carolina Hurricanes - Winnipeg Jets" to team codes) and a `teams` list to `schedule.json`. NHL studio shows have no teams, so they are hidden while following.
 
 ## Primetime
 
