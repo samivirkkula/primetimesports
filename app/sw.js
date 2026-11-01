@@ -1,6 +1,6 @@
 // Network first, cached copy when offline. Bump VERSION when app files change.
-const VERSION = "ruutuaikataulu-12";
-const SHELL = ["./", "index.html", "app.css?v=12", "app.js?v=12", "manifest.webmanifest", "icons/icon-192.png", "fonts/archivo.woff"];
+const VERSION = "ruutuaikataulu-13";
+const SHELL = ["./", "index.html", "app.css?v=13", "app.js?v=13", "manifest.webmanifest", "icons/icon-192.png", "fonts/archivo.woff"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -14,6 +14,8 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;
+  // Calendar files go straight to the network: iOS hands them to the calendar preview, which fails via a SW response.
+  if (new URL(e.request.url).pathname.endsWith(".ics")) return;
   e.respondWith(
     fetch(e.request)
       .then((res) => {
