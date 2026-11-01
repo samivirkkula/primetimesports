@@ -209,13 +209,28 @@ function renderLive(rows) {
   const box = $("live");
   if (!box) return;
   box.textContent = "";
+  box.style.height = "";
+  box.classList.remove("stuck");
   box.hidden = !rows.length;
   if (!rows.length) { document.documentElement.style.setProperty("--live-h", "0px"); return; }
+  const inner = document.createElement("div");
+  inner.className = "live-in";
   const h = document.createElement("p");
   h.className = "lv-head";
   h.textContent = "Livenä nyt";
-  box.append(h, ...rows);
-  document.documentElement.style.setProperty("--live-h", `${box.offsetHeight}px`);
+  inner.append(h, ...rows);
+  box.append(inner);
+  const height = inner.offsetHeight;
+  box.style.height = `${height}px`; // keeps the place in the flow when the panel is fixed
+  document.documentElement.style.setProperty("--live-h", `${height}px`);
+  pinLive();
+}
+
+// Fixed once the page has scrolled past the panel's place; done in script because it must never scroll away.
+function pinLive() {
+  const box = $("live");
+  if (!box || box.hidden) return;
+  box.classList.toggle("stuck", box.getBoundingClientRect().top <= 0);
 }
 
 function renderList() {
@@ -434,6 +449,8 @@ if (collapseBtn) collapseBtn.addEventListener("click", collapseAll);
 
 load();
 window.addEventListener("scroll", onScroll, { passive: true });
+window.addEventListener("scroll", pinLive, { passive: true });
+window.addEventListener("resize", pinLive);
 setInterval(() => data && renderList(), 60_000);
 // iOS home-screen apps do not always fire visibilitychange on resume, so also listen to pageshow/focus.
 function refreshIfStale() {
