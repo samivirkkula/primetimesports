@@ -393,9 +393,13 @@ if (collapseBtn) collapseBtn.addEventListener("click", collapseAll);
 load();
 window.addEventListener("scroll", onScroll, { passive: true });
 setInterval(() => data && renderList(), 60_000);
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && Date.now() - fetchedAt > 15 * 60_000) load();
-});
+// iOS home-screen apps do not always fire visibilitychange on resume, so also listen to pageshow/focus.
+function refreshIfStale() {
+  if (document.visibilityState === "visible" && Date.now() - fetchedAt > 5 * 60_000) load();
+}
+document.addEventListener("visibilitychange", refreshIfStale);
+window.addEventListener("pageshow", refreshIfStale);
+window.addEventListener("focus", refreshIfStale);
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
