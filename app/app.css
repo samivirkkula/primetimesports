@@ -92,12 +92,13 @@ body {
 .chip[aria-pressed="true"] { color: var(--ink); border-color: var(--c); }
 .chip[aria-pressed="true"]::before { opacity: 1; }
 
-.toggles { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 2px 16px 6px; }
-.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 32px; }
+.toggles { padding: 0 16px 4px; }
+.trow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-height: 30px; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--free); margin: 0; }
 .follow-row { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; }
 .pick-teams {
-  border: 0; background: none; padding: 6px 2px; min-height: 32px;
+  border: 0; background: none; padding: 4px 2px; min-height: 30px; white-space: nowrap;
   color: var(--c-nhl); font: 600 14px/1 var(--sans); cursor: pointer;
   text-decoration: underline; text-underline-offset: 3px;
 }
@@ -131,13 +132,12 @@ body {
 .chip.team { min-height: 34px; font-size: 14px; }
 
 .collapse-all {
-  margin-left: auto;
-  display: inline-flex; align-items: center; gap: 6px;
-  min-height: 32px; padding: 0 12px;
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 28px; padding: 0 10px;
   border: 1.5px solid var(--rule); border-radius: 16px;
   background: transparent; color: var(--muted);
-  font: 600 14px/1 var(--sans); font-stretch: 85%;
-  cursor: pointer;
+  font: 600 13px/1 var(--sans); font-stretch: 85%;
+  cursor: pointer; white-space: nowrap;
 }
 .collapse-all:active { background: var(--bg-deep); color: var(--ink); }
 .collapse-all:focus-visible { outline: 2px solid var(--head); outline-offset: 2px; }
