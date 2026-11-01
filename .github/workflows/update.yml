@@ -2,10 +2,9 @@ name: Päivitä aikataulu ja julkaise
 
 on:
   schedule:
-    # Kerran päivässä klo 16.00 Suomen aikaa. Cron on UTC-aikaa:
-    # 14.00 UTC = 16.00 talviaikaa, 13.00 UTC = 16.00 kesäaikaa.
-    # "gate"-vaihe päästää läpi vain ajon, joka osuu Suomessa klo 16:een.
-    - cron: "0 13,14 * * *"
+    # Kerran päivässä n. klo 16 Suomen aikaa (14.00 UTC talvella). GitHub viivästää
+    # ajastettuja ajoja, joten tarkkaa kellonaikaa ei tarkisteta.
+    - cron: "0 14 * * *"
   workflow_dispatch:
   push:
     branches: [main]
@@ -20,24 +19,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  gate:
-    runs-on: ubuntu-latest
-    outputs:
-      run: ${{ steps.check.outputs.run }}
-    steps:
-      - id: check
-        run: |
-          hour=$(TZ=Europe/Helsinki date +%H)
-          if [ "${{ github.event_name }}" != "schedule" ] || [ "$hour" = "16" ]; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Ohitetaan: Suomessa klo $hour, ajo tehdään klo 16."
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
-
   build:
-    needs: gate
-    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
