@@ -222,6 +222,7 @@ function renderList() {
     // webcal:// hands the file to the Calendar app; an https .ics link shows a blank page in the iOS home-screen app.
     remind.href = new URL(`ics/${ev.id}.ics`, location.href).href.replace(/^https?:/, "webcal:");
     remind.removeAttribute("target");
+    remind.addEventListener("click", (e) => { e.preventDefault(); window.location.href = remind.href; });
     remind.setAttribute("aria-label", `Muistuta: lisää kalenteriin ${ev.title}, hälytys 15 min ennen`);
     if (start <= now) row.classList.add("now");
     const t = row.querySelector(".t");

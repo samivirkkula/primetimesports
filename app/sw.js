@@ -1,6 +1,6 @@
 // Network first, cached copy when offline. Bump VERSION when app files change.
-const VERSION = "ruutuaikataulu-15";
-const SHELL = ["./", "index.html", "app.css?v=15", "app.js?v=15", "manifest.webmanifest", "icons/icon-192.png", "fonts/archivo.woff"];
+const VERSION = "ruutuaikataulu-16";
+const SHELL = ["./", "index.html", "app.css?v=16", "app.js?v=16", "manifest.webmanifest", "icons/icon-192.png", "fonts/archivo.woff"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
