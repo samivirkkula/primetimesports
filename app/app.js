@@ -220,6 +220,7 @@ function renderList() {
     go.href = primary.url || "#";
     const remind = row.querySelector(".remind");
     remind.href = `ics/${ev.id}.ics`;
+    remind.addEventListener("click", (e) => addToCalendar(e, remind.href, ev.id));
     remind.setAttribute("aria-label", `Muistuta: lisää kalenteriin ${ev.title}, hälytys 15 min ennen`);
     if (start <= now) row.classList.add("now");
     const t = row.querySelector(".t");
@@ -327,6 +328,23 @@ function openTeams() {
   renderTeams();
   if (typeof dlg.showModal === "function") dlg.showModal();
   else dlg.setAttribute("open", "");
+}
+
+// iOS shows a blank page for a .ics link opened from the home-screen app. Share the file instead:
+// the share sheet offers "Add to Calendar". Falls back to the plain link.
+async function addToCalendar(e, url, id) {
+  if (!navigator.canShare || !navigator.share) return;
+  e.preventDefault();
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const file = new File([await res.blob()], `${id}.ics`, { type: "text/calendar" });
+    if (!navigator.canShare({ files: [file] })) throw new Error("no file share");
+    await navigator.share({ files: [file] });
+  } catch (err) {
+    if (err && err.name === "AbortError") return;
+    window.open(url, "_blank", "noopener");
+  }
 }
 
 function render() {
