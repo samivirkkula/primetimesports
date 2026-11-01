@@ -186,6 +186,38 @@ function onScroll() {
   }
 }
 
+function liveRow(ev, bcs) {
+  const primary = bcs.find((b) => b.free) || bcs[0];
+  const a = document.createElement("a");
+  a.className = "lv";
+  a.href = primary.url || "#";
+  a.style.setProperty("--c", `var(--c-${ev.sport})`);
+  const t = document.createElement("span");
+  t.className = "lv-t";
+  t.textContent = time(ev.start);
+  const what = document.createElement("span");
+  what.className = "lv-what";
+  what.textContent = [ev.series || data.sports[ev.sport], ev.title, ev.session].filter(Boolean).join(" · ");
+  const svc = document.createElement("span");
+  svc.className = "lv-svc" + (primary.free ? " free" : "");
+  svc.textContent = primary.service;
+  a.append(t, what, svc);
+  return a;
+}
+
+function renderLive(rows) {
+  const box = $("live");
+  if (!box) return;
+  box.textContent = "";
+  box.hidden = !rows.length;
+  if (!rows.length) { document.documentElement.style.setProperty("--live-h", "0px"); return; }
+  const h = document.createElement("p");
+  h.className = "lv-head";
+  h.textContent = "Livenä nyt";
+  box.append(h, ...rows);
+  document.documentElement.style.setProperty("--live-h", `${box.offsetHeight}px`);
+}
+
 function renderList() {
   const list = $("list");
   const tpl = $("row");
@@ -193,6 +225,7 @@ function renderList() {
   const todayKey = fmtDayKey.format(new Date(now));
   const tomorrowKey = fmtDayKey.format(new Date(now + 86400000));
   const days = [];
+  const live = [];
 
   for (const ev of data.events) {
     if (state.hidden.includes(ev.sport)) continue;
@@ -203,6 +236,12 @@ function renderList() {
     if (state.followOnly && FOLLOW_SPORTS.includes(ev.sport) && !isFavorite(ev)) continue;
     const bcs = visibleBroadcasts(ev);
     if (!bcs.length) continue;
+
+    // Live now: pinned to the top in its own panel instead of inside a day.
+    if (start <= now) {
+      live.push(liveRow(ev, bcs));
+      continue;
+    }
 
     const key = fmtDayKey.format(new Date(start));
     let day = days[days.length - 1];
@@ -224,7 +263,6 @@ function renderList() {
     remind.removeAttribute("target");
     remind.addEventListener("click", (e) => { e.preventDefault(); window.location.href = remind.href; });
     remind.setAttribute("aria-label", `Muistuta: lisää kalenteriin ${ev.title}, hälytys 15 min ennen`);
-    if (start <= now) row.classList.add("now");
     const t = row.querySelector(".t");
     t.textContent = time(ev.start);
     t.dateTime = ev.start;
@@ -244,6 +282,7 @@ function renderList() {
     day.rows.push(row);
   }
 
+  renderLive(live);
   list.textContent = "";
   if (!days.length) {
     const p = document.createElement("p");
