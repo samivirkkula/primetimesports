@@ -2,9 +2,10 @@ name: Päivitä aikataulu ja julkaise
 
 on:
   schedule:
-    # Kerran päivässä n. klo 16 Suomen aikaa (14.00 UTC talvella). GitHub viivästää
-    # ajastettuja ajoja, joten tarkkaa kellonaikaa ei tarkisteta.
-    - cron: "0 14 * * *"
+    # Kaksi ajoa päivässä, ettei yksi väliin jäänyt ajo jätä dataa vanhaksi. GitHub
+    # viivästää tai jättää väliin tasatunnille ajastettuja ajoja, siksi epätasaiset minuutit.
+    - cron: "17 13 * * *"
+    - cron: "43 15 * * *"
   workflow_dispatch:
   push:
     branches: [main]
