@@ -20,7 +20,7 @@
     "moto3":  { "path": "urheilu/moottoriurheilu/moto3",     "format": "Moto3" },
     "nhl":    { "path": "urheilu/jaakiekko/nhl",             "format": "NHL" },
     "darts":  { "path": null,                                "format": null, "discover": "darts" },
-    "maajoukkue": { "paths": ["urheilu", "urheilu/jaakiekko", "urheilu/jalkapallo"], "title_match": "\\b(Suomi|Finland)\\b" }
+    "maajoukkue": { "paths": ["urheilu/jaakiekko", "urheilu/jalkapallo"], "title_match": "\\b(Suomi|Finland)\\b" }
   },
   "motorsport_extra_feeds": ["Track Positioning", "Timing", "Onboard", "Pitlane", "Data", "Studio", "Driver Tracker"]
 }
