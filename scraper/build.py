@@ -97,7 +97,7 @@ RALLY = re.compile(r"\bWRC\b|\bMM-ralli|\bralli\b|\brally\b", re.I)
 
 
 def merge(viaplay_items, liiga_items, mtv_items, overrides,
-          nfl_items=(), free_nfl=(), wrc_items=()) -> tuple[list[dict], dict]:
+          nfl_items=(), free_nfl=(), wrc_items=(), tv5_items=()) -> tuple[list[dict], dict]:
     report = {"mtv_unmatched": [], "nfl_free_unmatched": [], "wrc_mtv_unmatched": []}
     events = [to_event(e) for e in liiga_items] + [to_event(e) for e in nfl_items] + [to_event(e) for e in wrc_items]
 
@@ -149,6 +149,15 @@ def merge(viaplay_items, liiga_items, mtv_items, overrides,
             add_broadcast(ev, b)
         else:
             report["nfl_free_unmatched"].append(item)
+
+    # Finland national-team games on TV5: attach to the Viaplay game if there is one.
+    for item in tv5_items:
+        ev = find_match(events, "maajoukkue", parse_ts(item["start"]), item["title"],
+                        before=timedelta(minutes=75), after=timedelta(minutes=75))
+        if ev:
+            add_broadcast(ev, to_event(item)["broadcasts"][0])
+        else:
+            events.append(to_event(item))
 
     for o in overrides:
         o = dict(o, manual=True)
@@ -267,10 +276,13 @@ def main(argv=None) -> int:
     free_nfl = run_source("elisa", lambda: elisa.fetch(first_date=local_today, days=days),
                           now, args.cached, status) if "nfl" in enabled else []
 
+    tv5_items = run_source("elisa-tv5", lambda: elisa.fetch_national(first_date=local_today, days=days),
+                           now, args.cached, status) if "maajoukkue" in enabled else []
+
     overrides_path = ROOT / "data" / "overrides.json"
     overrides = [o for o in json.loads(overrides_path.read_text()) if not o.get("_example")] if overrides_path.exists() else []
 
-    events, report = merge(viaplay_items, liiga_items, mtv_items, overrides, nfl_items, free_nfl, wrc_items)
+    events, report = merge(viaplay_items, liiga_items, mtv_items, overrides, nfl_items, free_nfl, wrc_items, tv5_items)
     windows = {k: v.get("start_window") for k, v in cfg["sports"].items() if v.get("start_window")}
     events = finalize(events, now, last, windows, tz)
 
