@@ -254,7 +254,7 @@ def main(argv=None) -> int:
         if sport in enabled:
             viaplay_items += run_source(
                 f"viaplay-{sport}",
-                lambda s=sport, c=vcfg: viaplay.fetch(s, c, first_date=first_date, last_date=last_date, extra_feeds=extra),
+                lambda s=sport, c=vcfg: (viaplay.fetch_national if "paths" in c else viaplay.fetch)(s, c, first_date=first_date, last_date=last_date, extra_feeds=extra),
                 now, args.cached, status)
     liiga_items = run_source("liiga", lambda: liiga.fetch(first=now - timedelta(hours=3), last=last),
                              now, args.cached, status) if "liiga" in enabled else []

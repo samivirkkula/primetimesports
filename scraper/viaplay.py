@@ -175,3 +175,15 @@ def fetch(sport: str, cfg: dict, *, first_date: str, last_date: str, extra_feeds
             raise RuntimeError("Tuntematon Viaplayn päiväosoite")
         events += parse_day(get_json(link["href"]), sport=sport, fmt=cfg.get("format"), extra_feeds=extra_feeds)
     return events
+
+
+def fetch_national(sport: str, cfg: dict, *, first_date: str, last_date: str, extra_feeds: set[str]) -> list[dict]:
+    """National-team games: Viaplay has no section for them, so scan the landing pages for a title match."""
+    match = re.compile(cfg["title_match"], re.I)
+    seen: dict[str, dict] = {}
+    for path in cfg["paths"]:
+        for e in fetch(sport, {"path": path, "format": None}, first_date=first_date, last_date=last_date,
+                       extra_feeds=extra_feeds):
+            if match.search(e["title"]):
+                seen.setdefault(e.get("source_id") or f'{e["start"]}{e["title"]}', e)
+    return list(seen.values())

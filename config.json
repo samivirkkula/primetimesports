@@ -10,7 +10,8 @@
     "motogp": { "name": "MotoGP",    "enabled": true },
     "moto2":  { "name": "Moto2",     "enabled": true },
     "moto3":  { "name": "Moto3",     "enabled": true },
-    "darts":  { "name": "Darts",     "enabled": true }
+    "darts":  { "name": "Darts",     "enabled": true },
+    "maajoukkue": { "name": "Maajoukkue", "enabled": true }
   },
   "viaplay": {
     "f1":     { "path": "urheilu/moottoriurheilu/formula-1", "format": "Formula 1" },
@@ -18,7 +19,8 @@
     "moto2":  { "path": "urheilu/moottoriurheilu/moto2",     "format": "Moto2" },
     "moto3":  { "path": "urheilu/moottoriurheilu/moto3",     "format": "Moto3" },
     "nhl":    { "path": "urheilu/jaakiekko/nhl",             "format": "NHL" },
-    "darts":  { "path": null,                                "format": null, "discover": "darts" }
+    "darts":  { "path": null,                                "format": null, "discover": "darts" },
+    "maajoukkue": { "paths": ["urheilu", "urheilu/jaakiekko", "urheilu/jalkapallo"], "title_match": "\\b(Suomi|Finland)\\b" }
   },
   "motorsport_extra_feeds": ["Track Positioning", "Timing", "Onboard", "Pitlane", "Data", "Studio", "Driver Tracker"]
 }

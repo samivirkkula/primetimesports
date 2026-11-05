@@ -19,6 +19,7 @@
   --c-moto2: #B5E063;
   --c-moto3: #E3DC6B;
   --c-darts: #DD8BFF;
+  --c-maajoukkue: #6FA8FF;
   --sans: "Archivo", system-ui, -apple-system, sans-serif;
   color-scheme: dark;
 }
@@ -41,6 +42,7 @@
     --c-moto2: #577911;
     --c-moto3: #767000;
     --c-darts: #9B2FB8;
+    --c-maajoukkue: #0B5CAD;
     color-scheme: light;
   }
 }

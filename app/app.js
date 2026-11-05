@@ -4,7 +4,7 @@ const TZ = "Europe/Helsinki";
 const STORE = "urheilu-tv:v1";
 const SOURCE_NAMES = {
   "viaplay-f1": "Viaplay F1", "viaplay-motogp": "Viaplay MotoGP", "viaplay-moto2": "Viaplay Moto2",
-  "viaplay-moto3": "Viaplay Moto3", "viaplay-nhl": "Viaplay NHL", "viaplay-darts": "Viaplay darts",
+  "viaplay-moto3": "Viaplay Moto3", "viaplay-nhl": "Viaplay NHL", "viaplay-darts": "Viaplay darts", "viaplay-maajoukkue": "Viaplay maajoukkue",
   "liiga": "Liigan otteluohjelma", "mtv": "MTV:n ohjelmaopas",
   "ruutu-nfl": "Ruudun NFL-ohjelma", "elisa": "Elisa Viihteen ohjelmaopas", "wrc": "WRC:n aikataulu",
 };
