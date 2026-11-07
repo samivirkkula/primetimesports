@@ -8,7 +8,7 @@ A personal sports TV guide for iPhone. It shows only the sports I follow, with t
 | Liiga free-to-air | MTV TV guide (GraphQL), `LIVE` programmes on MTV3 / Sub | MTV3 / MTV Sub, marked free |
 | NHL | Viaplay schedule API (`content.viaplay.fi/pcdash-fi/urheilu/jaakiekko/nhl`) | Viaplay |
 | NHL on Sub | MTV TV guide, `LIVE` programmes with "NHL" in the title | MTV Sub, marked free |
-| NHL on Disney+ | Manual entries in `data/overrides.json` | Disney+ (marked with *) |
+| NHL on Disney+ | NHL schedule API (`api-web.nhle.com`): games with a US ESPN, ABC, ESPN+, Hulu or Disney+ broadcast (inferred; Disney+ publishes no Finnish list). Extra games can be added in `data/overrides.json` | Disney+ |
 | World Rally Championship | WRC results API (`api.wrc.com`: active-season calendar + event itinerary), one row per special stage | MTV Katsomo+ (all stages live) |
 | WRC free-to-air | MTV TV guide, `LIVE` rally programmes on MTV3 / Sub / Ava, attached to the stages they cover | MTV3 etc., marked free |
 | NFL | Ruutu NFL page (`ruutu.fi/ohjelmat/nfl`, `/stream/` cards; "Selostus suomi" marks Finnish commentary) | Ruutu+ |

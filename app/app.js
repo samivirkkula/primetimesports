@@ -6,7 +6,7 @@ const SOURCE_NAMES = {
   "viaplay-f1": "Viaplay F1", "viaplay-motogp": "Viaplay MotoGP", "viaplay-moto2": "Viaplay Moto2",
   "viaplay-moto3": "Viaplay Moto3", "viaplay-nhl": "Viaplay NHL", "viaplay-darts": "Viaplay darts", "viaplay-maajoukkue": "Viaplay maajoukkue",
   "liiga": "Liigan otteluohjelma", "mtv": "MTV:n ohjelmaopas",
-  "ruutu-nfl": "Ruudun NFL-ohjelma", "elisa": "Elisa Viihteen ohjelmaopas", "elisa-tv5": "TV5:n ohjelmaopas", "wrc": "WRC:n aikataulu",
+  "ruutu-nfl": "Ruudun NFL-ohjelma", "elisa": "Elisa Viihteen ohjelmaopas", "elisa-tv5": "TV5:n ohjelmaopas", "nhl-disney": "NHL:n aikataulu (Disney+)", "wrc": "WRC:n aikataulu",
 };
 
 const $ = (id) => document.getElementById(id);
