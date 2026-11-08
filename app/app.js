@@ -18,7 +18,7 @@ const fmtStamp = new Intl.DateTimeFormat("fi-FI", { timeZone: TZ, weekday: "shor
 
 let data = null;
 let fetchedAt = 0;
-let state = { hidden: [], primeOnly: true, followOnly: false, favorites: { liiga: [], nhl: [] } };
+let state = { hidden: [], primeOnly: true, followOnly: false, freeOnly: false, favorites: { liiga: [], nhl: [] } };
 const FOLLOW_SPORTS = ["liiga", "nhl"];
 
 const favs = (sport) => (state.favorites && state.favorites[sport]) || [];
@@ -249,7 +249,8 @@ function renderList() {
     if (state.primeOnly && !isPrimetime(start)) continue;
     // Followed teams: Liiga and NHL show only games of followed teams; other sports are unaffected.
     if (state.followOnly && FOLLOW_SPORTS.includes(ev.sport) && !isFavorite(ev)) continue;
-    const bcs = visibleBroadcasts(ev);
+    let bcs = visibleBroadcasts(ev);
+    if (state.freeOnly) bcs = bcs.filter((b) => b.free);
     if (!bcs.length) continue;
 
     // Live now: pinned to the top in its own panel instead of inside a day.
@@ -442,6 +443,7 @@ window.addEventListener("error", (e) => {
 loadState();
 bindToggle("primeOnly", "primeOnly");
 bindToggle("followOnly", "followOnly");
+bindToggle("freeOnly", "freeOnly");
 if ($("pickTeams")) $("pickTeams").addEventListener("click", openTeams);
 if ($("teamsDialog")) $("teamsDialog").addEventListener("close", () => { if (data) renderList(); });
 const collapseBtn = $("collapseAll");
