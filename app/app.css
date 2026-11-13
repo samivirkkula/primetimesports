@@ -258,3 +258,6 @@ main { max-width: 720px; margin: 0 auto; padding-bottom: 24px; }
 .lv-what { font-size: 14px; font-weight: 600; line-height: 1.25; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .lv-svc { font-size: 13px; color: var(--muted); white-space: nowrap; }
 .lv-svc.free { color: var(--free); font-weight: 600; }
+
+.settings-body { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px calc(20px + env(safe-area-inset-bottom)); }
+.settings-body .toggle { min-height: 40px; font-size: 16px; color: var(--ink); }

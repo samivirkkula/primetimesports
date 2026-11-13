@@ -444,6 +444,8 @@ loadState();
 bindToggle("primeOnly", "primeOnly");
 bindToggle("followOnly", "followOnly");
 bindToggle("freeOnly", "freeOnly");
+const settingsDialog = $("settingsDialog");
+if ($("openSettings") && settingsDialog) $("openSettings").addEventListener("click", () => settingsDialog.showModal());
 if ($("pickTeams")) $("pickTeams").addEventListener("click", openTeams);
 if ($("teamsDialog")) $("teamsDialog").addEventListener("close", () => { if (data) renderList(); });
 const collapseBtn = $("collapseAll");
