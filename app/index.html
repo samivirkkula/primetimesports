@@ -14,30 +14,25 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/archivo.woff" as="font" type="font/woff" crossorigin>
-<link rel="stylesheet" href="app.css?v=24">
+<link rel="stylesheet" href="app.css?v=26">
 </head>
 <body>
 <header class="top">
   <h1>Ruutuaikataulu</h1>
   <p class="updated" id="updated">Ladataan…</p>
+  <button type="button" class="gear" id="openSettings" aria-label="Asetukset" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
 </header>
 
 <nav class="filters" aria-label="Lajit">
   <div class="chips" id="chips" role="group" aria-label="Näytettävät lajit"></div>
   <div class="toggles">
     <div class="trow">
-      <label class="toggle"><input type="checkbox" id="primeOnly" checked> Vain primetime (15–23)</label>
       <button type="button" class="collapse-all" id="collapseAll" aria-label="Pienennä kaikki päivät">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11l5-5 5 5M7 18l5-5 5 5"/></svg>
         Pienennä päivät
       </button>
-    </div>
-    <div class="trow">
-      <label class="toggle"><input type="checkbox" id="freeOnly"> Vain ilmaiset lähetykset</label>
-    </div>
-    <div class="trow">
-      <label class="toggle"><input type="checkbox" id="followOnly"> Vain seuratut joukkueet</label>
-      <button type="button" class="pick-teams" id="pickTeams">Valitse joukkueet</button>
     </div>
   </div>
 </nav>
@@ -47,6 +42,23 @@
 <main id="list" aria-live="polite"></main>
 
 <footer class="foot" id="foot"></footer>
+
+<dialog class="teams" id="settingsDialog" aria-labelledby="settingsTitle">
+  <form method="dialog">
+    <header class="teams-head">
+      <h2 id="settingsTitle">Asetukset</h2>
+      <button class="done" value="done">Valmis</button>
+    </header>
+    <div class="settings-body">
+      <label class="toggle"><input type="checkbox" id="primeOnly" checked> Vain primetime (15–23)</label>
+      <label class="toggle"><input type="checkbox" id="freeOnly"> Vain ilmaiset lähetykset</label>
+      <div class="trow">
+        <label class="toggle"><input type="checkbox" id="followOnly"> Vain seuratut joukkueet</label>
+        <button type="button" class="pick-teams" id="pickTeams">Valitse joukkueet</button>
+      </div>
+    </div>
+  </form>
+</dialog>
 
 <dialog class="teams" id="teamsDialog" aria-labelledby="teamsTitle">
   <form method="dialog">
@@ -75,6 +87,6 @@
   </div>
 </template>
 
-<script src="app.js?v=24" defer></script>
+<script src="app.js?v=26" defer></script>
 </body>
 </html>
